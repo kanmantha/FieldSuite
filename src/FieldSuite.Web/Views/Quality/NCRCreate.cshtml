@@ -1,0 +1,48 @@
+@model FieldSuite.Web.ViewModels.NcrCreateVm
+@{
+    ViewData["Title"] = "New NCR";
+}
+<h4 class="fw-bold mb-3">Raise non-conformance report</h4>
+<div class="card" style="max-width:760px">
+    <div class="card-body">
+        <form asp-action="NCRCreate" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Project *</label>
+                    <select asp-for="ProjectId" class="form-select" asp-items="ViewBag.Projects"><option value="">Select project</option></select>
+                    <span asp-validation-for="ProjectId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Severity</label>
+                    <select asp-for="Severity" class="form-select" asp-items="Html.GetEnumSelectList<Severity>()"></select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description *</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Detected date</label>
+                    <input asp-for="DetectedDate" type="date" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Containment action *</label>
+                    <input asp-for="ContainmentAction" class="form-control" placeholder="Immediate action taken" />
+                    <span asp-validation-for="ContainmentAction" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Raise NCR</button>
+                <a class="btn btn-outline-secondary" asp-action="NCRs">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

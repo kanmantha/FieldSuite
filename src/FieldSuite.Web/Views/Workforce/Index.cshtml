@@ -1,0 +1,91 @@
+@model FieldSuite.Web.ViewModels.AttendanceBoardViewModel
+@{
+    ViewData["Title"] = "Attendance - Today";
+    var groups = Model.Rows.GroupBy(r => r.Worker.Shift).OrderBy(g => g.Key).ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Attendance board</h4>
+        <span class="text-muted small">@Model.Date.ToString("dddd, dd MMMM yyyy") · today's crew sign-in</span>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-action="Attendance">+ Record attendance</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="kpi-card success"><div class="kpi-label">Present</div><div class="kpi-value">@Model.PresentCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="kpi-card danger"><div class="kpi-label">Absent</div><div class="kpi-value">@Model.AbsentCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="kpi-card warning"><div class="kpi-label">Late</div><div class="kpi-value">@Model.LateCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="kpi-card info"><div class="kpi-label">On leave</div><div class="kpi-value">@Model.LeaveCount</div></div></div>
+</div>
+
+<div class="card">
+    <table class="table table-sm table-hover mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Worker</th>
+            <th>Job title</th>
+            <th>Shift</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Clock in</th>
+            <th>Clock out</th>
+            <th class="text-end">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.Rows.Count == 0)
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No active workers in your organization.</td></tr>
+        }
+        @foreach (var group in groups)
+        {
+            <tr class="table-light">
+                <td colspan="8" class="fw-semibold small text-uppercase">@group.Key shift</td>
+            </tr>
+            foreach (var row in group)
+            {
+                var worker = row.Worker;
+                var today = row.Today;
+                <tr>
+                    <td class="fw-semibold">
+                        <a asp-action="WorkerDetails" asp-route-id="@worker.Id">@worker.FullName</a>
+                    </td>
+                    <td class="small">@worker.JobTitle</td>
+                    <td><span class="badge bg-secondary">@worker.Shift</span></td>
+                    <td class="small">@(today?.Project?.Name ?? "—")</td>
+                    <td>
+                        @if (today != null)
+                        {
+                            <span class="badge bg-@(FieldSuite.Web.ViewModels.WorkforceBadges.Attendance(today.Status))">@today.Status</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-light text-muted border">Not marked</span>
+                        }
+                    </td>
+                    <td class="small">@(today?.ClockIn?.ToString("HH:mm") ?? "—")</td>
+                    <td class="small">@(today?.ClockOut?.ToString("HH:mm") ?? "—")</td>
+                    <td class="text-end">
+                        <form asp-action="AttendanceMark" method="post" class="d-flex gap-1 justify-content-end flex-wrap">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="workerId" value="@worker.Id" />
+                            @Html.DropDownList("status", row.StatusOptions, new { @class = "form-select form-select-sm", id = "status-" + worker.Id, style = "width:auto;" })
+                            @Html.DropDownList("projectId", row.ProjectOptions, new { @class = "form-select form-select-sm", id = "project-" + worker.Id, style = "width:auto; max-width:180px;" })
+                            <button type="submit" class="btn btn-sm btn-primary">Mark</button>
+                        </form>
+                        @if (today != null && today.ClockIn != null && today.ClockOut == null && today.Status == AttendanceStatus.Present)
+                        {
+                            <form asp-action="AttendanceClockOut" method="post" class="d-inline-block mt-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="workerId" value="@worker.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Clock out</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

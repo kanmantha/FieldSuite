@@ -1,0 +1,29 @@
+# Render Blueprint — service + database wiring. Names must stay in sync
+# with the fromDatabase reference below.
+#   web: fieldsuite   db: fieldsuite-postgres
+
+services:
+  - type: web
+    name: fieldsuite
+    runtime: docker
+    plan: free
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    region: oregon
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: fieldsuite-postgres
+          property: connectionString
+
+databases:
+  - name: fieldsuite-postgres
+    plan: free
+    region: oregon
+    postgresMajorVersion: "16"
+    databaseName: fieldsuite
+    user: fieldsuite

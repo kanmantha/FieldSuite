@@ -1,0 +1,252 @@
+@model FieldSuite.Domain.Entities.WorkPermit
+@using FieldSuite.Web.ViewModels
+@inject FieldSuite.Web.Services.ICurrentUser Current
+@{
+    ViewData["Title"] = Model.Reference;
+    var score = (FieldSuite.Infrastructure.Services.RiskScoreResult)ViewBag.Score;
+    var asAt = (DateTime)ViewBag.AsAt;
+    var next = ViewBag.NextApproval as FieldSuite.Domain.Entities.PermitApproval;
+    var canDecide = (bool)ViewBag.CanDecide;
+    var checklistEnabled = (bool)ViewBag.ChecklistEnabled;
+    var canOperate = Current.IsInRole("SiteManager", "SafetyOfficer", "Admin");
+    var riskAlert = Model.RiskLevel switch
+    {
+        FieldSuite.Domain.Common.RiskLevel.Low => "success",
+        FieldSuite.Domain.Common.RiskLevel.Medium => "info",
+        FieldSuite.Domain.Common.RiskLevel.High => "warning",
+        _ => "danger"
+    };
+    var isActive = Model.Status == FieldSuite.Domain.Common.PermitStatus.Active;
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">
+            @Model.Reference
+            <span class="badge bg-@PermitBadges.StatusBadge(Model.Status)">@Model.Status</span>
+            <span class="badge bg-@PermitBadges.RiskBadge(Model.RiskLevel)">@Model.RiskLevel risk</span>
+        </h4>
+        <span class="text-muted small">@Model.Title · @Model.Type</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        @if (Model.Status == FieldSuite.Domain.Common.PermitStatus.Draft ||
+             Model.Status == FieldSuite.Domain.Common.PermitStatus.PendingApproval)
+        {
+            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id">Edit</a>
+        }
+        @if (Model.Status == FieldSuite.Domain.Common.PermitStatus.Draft)
+        {
+            <form asp-action="Submit" asp-route-id="@Model.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-primary">Submit for approval</button>
+            </form>
+        }
+        @if (Model.Status == FieldSuite.Domain.Common.PermitStatus.Approved && canOperate)
+        {
+            <form asp-action="Start" asp-route-id="@Model.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-success">Start work</button>
+            </form>
+        }
+        @if (Model.Status == FieldSuite.Domain.Common.PermitStatus.Active && canOperate)
+        {
+            <form asp-action="Suspend" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Suspend this permit?')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-warning">Suspend</button>
+            </form>
+            <form asp-action="Close" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Close this permit?')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-outline-danger">Close</button>
+            </form>
+        }
+        @if (Model.Status == FieldSuite.Domain.Common.PermitStatus.Suspended && canOperate)
+        {
+            <form asp-action="Resume" asp-route-id="@Model.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-success">Resume</button>
+            </form>
+            <form asp-action="Close" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Close this permit?')">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-sm btn-outline-danger">Close</button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (isActive)
+{
+    var remaining = Model.RequestedEnd - asAt;
+    <div class="alert alert-warning py-2">
+        Permit is <strong>active</strong>. Requested end
+        <strong>@Model.RequestedEnd.ToString("dd MMM yyyy HH:mm") UTC</strong> —
+        @(remaining > TimeSpan.Zero
+            ? $"expires in {remaining.Days * 24 + remaining.Hours}h {remaining.Minutes}m"
+            : "requested window elapsed — close or have the nudge engine expire this permit")
+    </div>
+}
+<div class="text-muted small mb-3">Data as at @asAt.ToString("dd MMM yyyy HH:mm") UTC</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Permit details</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 detail-label">Project</div><div class="col-8">@(Model.Project?.Name ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Requester</div><div class="col-8">@(Model.RequestedBy?.FullName ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Type</div><div class="col-8"><span class="badge bg-secondary">@Model.Type</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Requested window</div><div class="col-8">@Model.RequestedStart.ToString("dd MMM yyyy HH:mm") → @Model.RequestedEnd.ToString("dd MMM yyyy HH:mm")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Actual window</div><div class="col-8">@(Model.ActualStart?.ToString("dd MMM yyyy HH:mm") ?? "—") → @(Model.ActualEnd?.ToString("dd MMM yyyy HH:mm") ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Location</div><div class="col-8">@Model.Location</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Isolation verified</div><div class="col-8">@(Model.IsolationVerified ? "Yes" : "No")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Gas test required</div><div class="col-8">@(Model.GasTestRequired ? "Yes" : "No")</div></div>
+                <div class="row">
+                    <div class="col-12 detail-label mb-1">Special conditions</div>
+                    <div class="col-12"><pre class="mb-0 small" style="white-space: pre-wrap;">@(string.IsNullOrEmpty(Model.SpecialConditions) ? "—" : Model.SpecialConditions)</pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                <span>Risk assessment</span>
+                <span class="badge bg-@PermitBadges.RiskBadge(Model.RiskLevel)">@Model.RiskLevel</span>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-@riskAlert py-2">
+                    <strong>Score: @score.Score</strong> · required chain:
+                    @string.Join(" → ", score.RequiredApproverRoles)
+                </div>
+                <div class="fw-semibold small text-uppercase text-muted mb-1">Why this score</div>
+                <ul class="list-group list-group-flush mb-3">
+                    @foreach (var reason in score.Reasons)
+                    {
+                        <li class="list-group-item small">@reason</li>
+                    }
+                </ul>
+                <div class="fw-semibold small text-uppercase text-muted mb-1">Approval chain</div>
+                <ol class="mb-0">
+                    @for (var i = 0; i < score.RequiredApproverRoles.Count; i++)
+                    {
+                        <li>Level @(i + 1) — @score.RequiredApproverRoles[i]</li>
+                    }
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                <span>Pre-start checklist</span>
+                <span class="text-muted small">@Model.ChecklistItems.Count(c => c.IsChecked) of @Model.ChecklistItems.Count checked</span>
+            </div>
+            @if (!Model.ChecklistItems.Any())
+            {
+                <div class="card-body text-muted small">No checklist items defined.</div>
+            }
+            <ul class="list-group list-group-flush">
+                @foreach (var item in Model.ChecklistItems.OrderBy(c => c.Id))
+                {
+                    <li class="list-group-item @(item.IsChecked ? "list-group-item-success" : "")">
+                        <form asp-action="ChecklistToggle" asp-route-id="@Model.Id" asp-route-itemId="@item.Id" method="post" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <div class="d-flex align-items-center gap-2">
+                                <input class="form-check-input mt-0" type="checkbox" id="chk-@item.Id"
+                                       checked="@(item.IsChecked ? "checked" : null)"
+                                       disabled="@(checklistEnabled ? null : "disabled")"
+                                       onchange="this.form.submit()" />
+                                <label class="form-check-label small" for="chk-@item.Id">@item.Text</label>
+                                <span class="ms-auto small text-muted">
+                                    @if (item.CheckedAt.HasValue)
+                                    {
+                                        <text>@item.CheckedBy?.FullName · @item.CheckedAt.Value.ToString("dd MMM HH:mm")</text>
+                                    }
+                                </span>
+                            </div>
+                        </form>
+                    </li>
+                }
+            </ul>
+            @if (!checklistEnabled)
+            {
+                <div class="card-footer bg-white text-muted small">Checklist is locked — permit is @Model.Status.</div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Approval chain</div>
+            @if (!Model.Approvals.Any())
+            {
+                <div class="card-body text-muted small">No approval rows configured for this permit.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                        <tr>
+                            <th>Level</th><th>Role</th><th>Decided by</th><th>Decision</th><th>Comment</th><th>When</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var a in Model.Approvals.OrderBy(a => a.Level))
+                        {
+                            var isNext = next is not null && a.Id == next.Id;
+                            <tr class="@(isNext ? "table-warning" : "")">
+                                <td>
+                                    <span class="badge bg-secondary">@a.Level</span>
+                                    @if (isNext && canDecide)
+                                    {
+                                        <span class="badge bg-info">your turn</span>
+                                    }
+                                </td>
+                                <td>@a.ApproverRole</td>
+                                <td>@(a.Approver?.FullName ?? "—")</td>
+                                <td><span class="badge bg-@PermitBadges.DecisionBadge(a.Decision)">@a.Decision</span></td>
+                                <td class="small" style="max-width: 200px;">@a.Comment</td>
+                                <td class="small">@(a.DecidedAt?.ToString("dd MMM HH:mm") ?? "—")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (canDecide && next is not null)
+            {
+                <div class="card-footer border-top border-warning">
+                    <div class="fw-semibold small mb-2">Your approval is required — Level @next.Level (@next.ApproverRole)</div>
+                    <form asp-action="Approve" asp-route-id="@Model.Id" asp-route-approvalId="@next.Id" method="post" class="row g-2">
+                        @Html.AntiForgeryToken()
+                        <div class="col">
+                            <input name="comment" class="form-control form-control-sm" placeholder="Approval comment (optional)" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                        </div>
+                    </form>
+                    <form asp-action="Reject" asp-route-id="@Model.Id" asp-route-approvalId="@next.Id" method="post" class="row g-2 mt-2" onsubmit="return confirm('Reject this permit? This cannot be undone.')">
+                        @Html.AntiForgeryToken()
+                        <div class="col">
+                            <input name="comment" class="form-control form-control-sm" placeholder="Rejection reason" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                        </div>
+                    </form>
+                </div>
+            }
+            @if (Model.Status == FieldSuite.Domain.Common.PermitStatus.PendingApproval && next is not null && !canDecide)
+            {
+                <div class="card-footer bg-white text-muted small">Awaiting <strong>@next.ApproverRole</strong> (Level @next.Level).</div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="text-muted small mt-3">
+    Workflow: Draft → Pending Approval → Approved → Active ⇄ Suspended → Closed. Expiry is managed automatically.
+</div>

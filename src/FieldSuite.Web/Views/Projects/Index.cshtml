@@ -1,0 +1,41 @@
+@model IReadOnlyList<FieldSuite.Domain.Entities.Project>
+@{
+    ViewData["Title"] = "Projects";
+    var rows = (List<ProjectsController.ProjectRowStats>)ViewBag.ProjectStats;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Projects / Sites</h4>
+        <span class="text-muted small">Shared spine across all modules</span>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-action="Create">+ New project</a>
+</div>
+
+<div class="card">
+    <table class="table table-hover mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Code</th><th>Name</th><th>Client</th><th>Status</th>
+            <th class="text-center">Open snags</th><th class="text-center">Open incidents</th><th class="text-center">Active permits</th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var row in rows)
+        {
+            <tr>
+                <td class="fw-semibold">@row.Project.Code</td>
+                <td>@row.Project.Name</td>
+                <td class="small">@row.Project.ClientName</td>
+                <td><span class="badge bg-@(row.Project.IsActive ? "success" : "secondary")">@row.Project.Status</span></td>
+                <td class="text-center">@row.OpenSnags</td>
+                <td class="text-center">@row.OpenIncidents</td>
+                <td class="text-center">@row.ActivePermits</td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@row.Project.Id">Open</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

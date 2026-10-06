@@ -1,0 +1,38 @@
+@model FieldSuite.Web.ViewModels.InspectionCreateVm
+@{
+    ViewData["Title"] = "New Inspection";
+}
+<h4 class="fw-bold mb-3">New inspection</h4>
+<div class="card" style="max-width:680px">
+    <div class="card-body">
+        <form asp-action="InspectionCreate" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Project *</label>
+                    <select asp-for="ProjectId" class="form-select" asp-items="ViewBag.Projects"><option value="">Select project</option></select>
+                    <span asp-validation-for="ProjectId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Type</label>
+                    <select asp-for="Type" class="form-select" asp-items="Html.GetEnumSelectList<InspectionType>()"></select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Date</label>
+                    <input asp-for="InspectionDate" type="date" class="form-control" />
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a class="btn btn-outline-secondary" asp-action="Inspections">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

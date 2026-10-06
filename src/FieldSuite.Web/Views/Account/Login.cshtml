@@ -1,0 +1,60 @@
+@model FieldSuite.Domain.Entities.AppUser
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = "_Layout";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card mt-5">
+            <div class="card-body p-4">
+                <h4 class="mb-1 fw-bold">FieldSuite</h4>
+                <p class="text-muted small mb-4">Workforce &amp; field management for construction SMEs</p>
+
+                <form asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" class="form-control" autocomplete="username" autofocus />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input name="password" type="password" class="form-control" autocomplete="current-password" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
+                </form>
+
+                <hr />
+                <div class="small text-muted">
+                    <div class="fw-semibold mb-1">Demo accounts</div>
+                    <table class="table table-sm table-striped small mb-2" id="demo-accounts">
+                        <tbody>
+                            <tr data-email="admin@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Admin</a></td></tr>
+                            <tr data-email="site@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Site Manager</a></td></tr>
+                            <tr data-email="safety@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Safety Officer</a></td></tr>
+                            <tr data-email="qc@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">QC Inspector</a></td></tr>
+                            <tr data-email="est@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Estimator</a></td></tr>
+                        </tbody>
+                    </table>
+                    <div class="mt-1">Password for all: <code>Demo123!</code></div>
+                    <div class="text-muted">Click an account to fill the form.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('demo-accounts').addEventListener('click', function (e) {
+        var link = e.target.closest('a');
+        if (!link) return;
+        e.preventDefault();
+        var row = link.closest('tr');
+        document.querySelector('[name="email"]').value = row.getAttribute('data-email');
+        document.querySelector('[name="password"]').value = 'Demo123!';
+        document.querySelector('[name="email"]').focus();
+    });
+</script>

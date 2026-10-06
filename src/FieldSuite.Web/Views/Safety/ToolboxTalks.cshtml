@@ -1,0 +1,72 @@
+@model IReadOnlyList<FieldSuite.Domain.Entities.ToolboxTalk>
+@{
+    ViewData["Title"] = "Toolbox Talks";
+    var talkCount = (int)ViewBag.TalkCount;
+    var recentCount = (int)ViewBag.RecentCount;
+    var attendanceCount = (int)ViewBag.AttendanceCount;
+    var projects = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Projects;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Toolbox Talks</h4>
+        <span class="text-muted small">Short safety briefings with recorded attendance</span>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-action="ToolboxTalkCreate">+ New toolbox talk</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="kpi-card"><div class="kpi-label">Talks recorded</div><div class="kpi-value">@talkCount</div></div></div>
+    <div class="col-md-4"><div class="kpi-card success"><div class="kpi-label">Last 30 days</div><div class="kpi-value">@recentCount</div></div></div>
+    <div class="col-md-4"><div class="kpi-card info"><div class="kpi-label">Attendance rows</div><div class="kpi-value">@attendanceCount</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white">
+        <form method="get" asp-action="ToolboxTalks" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <select name="projectId" class="form-select form-select-sm" aria-label="Project filter">
+                    <option value="">All projects</option>
+                    @foreach (var item in projects)
+                    {
+                        <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+            </div>
+            <div class="col-auto">
+                <a class="btn btn-sm btn-link text-muted" asp-action="ToolboxTalks">Clear</a>
+            </div>
+        </form>
+    </div>
+    <table class="table table-hover table-sm mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Date</th><th>Topic</th><th>Project</th><th>Facilitator</th>
+            <th class="text-center">Duration</th><th class="text-center">Attendees</th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="7" class="text-center text-muted py-4">No toolbox talks match the current filters.</td></tr>
+        }
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td class="small">@t.TalkDate.ToString("dd MMM yyyy")</td>
+                <td class="fw-semibold">@t.Topic</td>
+                <td class="small">@(t.Project?.Name ?? "—")</td>
+                <td class="small">@(t.Facilitator?.FullName ?? "—")</td>
+                <td class="text-center">@t.DurationMinutes min</td>
+                <td class="text-center"><span class="badge bg-secondary">@t.Attendances.Count</span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="ToolboxTalkDetails" asp-route-id="@t.Id">Open</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

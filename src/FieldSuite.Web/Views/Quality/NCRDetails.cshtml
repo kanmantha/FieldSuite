@@ -1,0 +1,56 @@
+@model FieldSuite.Domain.Entities.NCR
+@{
+    ViewData["Title"] = $"NCR {Model.Reference}";
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">@Model.Reference — @Model.Title</h4>
+        <span class="text-muted small">@Model.Project?.Name · Detected @Model.DetectedDate.ToString("dd MMM yyyy")</span>
+    </div>
+    <a class="btn btn-sm btn-outline-secondary" asp-action="NCRs">Back</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 detail-label">Status</div><div class="col-8"><span class="badge bg-@(Model.Status == NCRStatus.Closed ? "success" : "primary")">@Model.Status</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Severity</div><div class="col-8"><span class="badge bg-@(Model.Severity == Severity.High || Model.Severity == Severity.Critical ? "danger" : Model.Severity == Severity.Medium ? "warning text-dark" : "secondary")">@Model.Severity</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Description</div><div class="col-8">@Model.Description</div></div>
+                <div class="row"><div class="col-4 detail-label">Containment</div><div class="col-8">@Model.ContainmentAction</div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-white fw-semibold">Workflow</div>
+            <div class="card-body d-flex flex-wrap gap-2">
+                @{
+                    string[]? actions = Model.Status switch
+                    {
+                        NCRStatus.Open => new[] { "Containment" },
+                        NCRStatus.Containment => new[] { "Investigation" },
+                        NCRStatus.Investigation => new[] { "Closed" },
+                        _ => Array.Empty<string>()
+                    };
+                }
+                @foreach (var action in actions)
+                {
+                    var target = (NCRStatus)Enum.Parse(typeof(NCRStatus), action);
+                    <form asp-action="NCRTransition" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="hidden" name="to" value="@((int)target)" />
+                        <button class="btn btn-sm @(target == NCRStatus.Closed ? "btn-success" : "btn-primary")"
+                                onclick="return confirm('Move to @action?');">@action</button>
+                    </form>
+                }
+                @if (actions.Length == 0)
+                {
+                    <span class="text-muted small">This NCR is closed — no further transitions.</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>

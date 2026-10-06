@@ -1,0 +1,191 @@
+@model FieldSuite.Web.ViewModels.IncidentDetailsVm
+@using FieldSuite.Web.ViewModels
+@inject FieldSuite.Web.Services.ICurrentUser Current
+@{
+    ViewData["Title"] = Model.Incident.Reference;
+    var incident = Model.Incident;
+    var canOperate = Current.IsInRole("SafetyOfficer", "SiteManager", "Admin");
+    IncidentStatus? next = incident.Status switch
+    {
+        IncidentStatus.Draft => IncidentStatus.Reported,
+        IncidentStatus.Reported => IncidentStatus.Investigating,
+        IncidentStatus.Investigating => IncidentStatus.Resolved,
+        IncidentStatus.Resolved => IncidentStatus.Closed,
+        _ => null
+    };
+    var nextLabel = next switch
+    {
+        IncidentStatus.Reported => "Report incident",
+        IncidentStatus.Investigating => "Start investigation",
+        IncidentStatus.Resolved => "Mark resolved",
+        IncidentStatus.Closed => "Close & review",
+        _ => "Advance"
+    };
+    var editable = incident.Status == IncidentStatus.Draft || incident.Status == IncidentStatus.Reported;
+    var openActions = incident.CorrectiveActions.Count(a => a.Status != CorrectiveActionStatus.Done);
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">
+            @incident.Reference
+            <span class="badge bg-@SafetyBadges.StatusBadge(incident.Status)">@incident.Status</span>
+            <span class="badge bg-@SafetyBadges.SeverityBadge(incident.Severity)">@incident.Severity</span>
+            <span class="badge bg-@SafetyBadges.TypeBadge(incident.Type)">@incident.Type</span>
+        </h4>
+        <span class="text-muted small">@incident.Title · @(incident.Project?.Name ?? "—")</span>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-secondary" asp-action="Index">All incidents</a>
+        @if (editable)
+        {
+            <a class="btn btn-sm btn-outline-primary" asp-action="IncidentEdit" asp-route-id="@incident.Id">Edit</a>
+        }
+        @if (canOperate && next.HasValue)
+        {
+            <form asp-action="IncidentTransition" asp-route-id="@incident.Id" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="to" value="@((int)next.Value)" />
+                <button type="submit" class="btn btn-sm btn-primary">@nextLabel</button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (incident.Status == IncidentStatus.Draft)
+{
+    <div class="alert alert-secondary py-2">
+        This incident is still a <strong>draft</strong>. Report it to notify the Safety Officer and open the investigation workflow.
+    </div>
+}
+@if (incident.Status == IncidentStatus.Closed)
+{
+    <div class="alert alert-success py-2">
+        Closed and reviewed by <strong>@(incident.ReviewedBy?.FullName ?? "—")</strong>.
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Incident details</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 detail-label">Reference</div><div class="col-8">@incident.Reference</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Project</div><div class="col-8">@(incident.Project?.Name ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Type</div><div class="col-8"><span class="badge bg-@SafetyBadges.TypeBadge(incident.Type)">@incident.Type</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Severity</div><div class="col-8"><span class="badge bg-@SafetyBadges.SeverityBadge(incident.Severity)">@incident.Severity</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Occurred at</div><div class="col-8">@incident.OccurredAt.ToString("dd MMM yyyy HH:mm") UTC</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Location</div><div class="col-8">@incident.Location</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Reported by</div><div class="col-8">@(incident.ReportedBy?.FullName ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Status</div><div class="col-8"><span class="badge bg-@SafetyBadges.StatusBadge(incident.Status)">@incident.Status</span></div></div>
+                <div class="row">
+                    <div class="col-12 detail-label mb-1">Description</div>
+                    <div class="col-12"><pre class="mb-0 small" style="white-space: pre-wrap;">@(string.IsNullOrEmpty(incident.Description) ? "—" : incident.Description)</pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Investigation</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 detail-label">Status</div><div class="col-8"><span class="badge bg-@SafetyBadges.StatusBadge(incident.Status)">@incident.Status</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Reviewed by</div><div class="col-8">@(incident.ReviewedBy?.FullName ?? "—")</div></div>
+                <div class="row mb-2">
+                    <div class="col-4 detail-label">Open actions</div>
+                    <div class="col-8">@openActions of @incident.CorrectiveActions.Count</div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-12 detail-label mb-1">Root cause</div>
+                    <div class="col-12"><pre class="mb-0 small" style="white-space: pre-wrap;">@(string.IsNullOrEmpty(incident.RootCause) ? "—" : incident.RootCause)</pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span>Corrective actions</span>
+        <span class="text-muted small">@incident.CorrectiveActions.Count total</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+            <tr>
+                <th>Action</th><th>Assigned to</th><th>Due</th><th style="width: 240px;">Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (!incident.CorrectiveActions.Any())
+            {
+                <tr><td colspan="4" class="text-center text-muted py-4">No corrective actions raised yet.</td></tr>
+            }
+            @foreach (var action in incident.CorrectiveActions.OrderBy(a => a.DueDate).ThenBy(a => a.Id))
+            {
+                <tr>
+                    <td class="small">@action.Description</td>
+                    <td class="small">@(action.AssignedTo?.FullName ?? "Unassigned")</td>
+                    <td class="small">
+                        @action.DueDate.ToString("dd MMM yyyy")
+                        @if (action.DueDate.Date < DateTime.UtcNow.Date && action.Status != CorrectiveActionStatus.Done)
+                        {
+                            <span class="badge bg-danger">overdue</span>
+                        }
+                    </td>
+                    <td>
+                        @if (canOperate)
+                        {
+                            <form asp-action="CorrectiveActionUpdate" asp-route-id="@action.Id" method="post" class="d-flex gap-1">
+                                @Html.AntiForgeryToken()
+                                <select name="status" class="form-select form-select-sm">
+                                    @foreach (var opt in Html.GetEnumSelectList<CorrectiveActionStatus>())
+                                    {
+                                        <option value="@opt.Value" selected="@(action.Status.ToString() == opt.Text ? "selected" : null)">@opt.Text</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Save</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <span class="badge bg-@SafetyBadges.ActionBadge(action.Status)">@action.Status</span>
+                        }
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+    @if (canOperate && incident.Status != IncidentStatus.Closed)
+    {
+        <div class="card-footer bg-white border-top">
+            <div class="fw-semibold small mb-2">Add corrective action</div>
+            <form asp-action="CorrectiveActionAdd" asp-route-incidentId="@incident.Id" method="post" class="row g-2">
+                @Html.AntiForgeryToken()
+                <div class="col-md-4">
+                    <input name="description" class="form-control form-control-sm" placeholder="What must be done?" required />
+                </div>
+                <div class="col-md-3">
+                    <select name="assignedToId" class="form-select form-select-sm">
+                        <option value="">Unassigned</option>
+                        @foreach (var item in Model.AssignedToList)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" name="dueDate" class="form-control form-control-sm" required />
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-sm btn-primary">Add action</button>
+                </div>
+            </form>
+        </div>
+    }
+</div>
+
+<div class="text-muted small mt-3">
+    Workflow: Draft → Reported → Investigating → Resolved → Closed (forward only).
+</div>

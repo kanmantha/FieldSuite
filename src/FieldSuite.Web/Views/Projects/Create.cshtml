@@ -1,0 +1,51 @@
+@model FieldSuite.Domain.Entities.Project
+@{
+    ViewData["Title"] = "New project";
+}
+
+<h4 class="fw-bold mb-3">New project</h4>
+
+<div class="card" style="max-width: 720px;">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Project name *</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Code *</label>
+                    <input asp-for="Code" class="form-control" placeholder="PRJ-01" />
+                    <span asp-validation-for="Code" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select asp-for="Status" asp-items="Html.GetEnumSelectList<FieldSuite.Domain.Common.ProjectStatus>()" class="form-select"></select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Client</label>
+                    <input asp-for="ClientName" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Address</label>
+                    <input asp-for="Address" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Start date</label>
+                    <input asp-for="StartDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">End date</label>
+                    <input asp-for="EndDate" type="date" class="form-control" />
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Create project</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

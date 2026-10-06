@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+*.user
+*.suo
+
+# IDE
+.vs/
+.idea/
+.vscode/
+
+# Uploads & local data
+src/FieldSuite.Web/wwwroot/uploads/
+*.db
+
+# Logs
+*.log

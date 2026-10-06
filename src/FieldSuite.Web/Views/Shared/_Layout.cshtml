@@ -1,0 +1,108 @@
+﻿@using FieldSuite.Web.Services
+@inject ICurrentUser Current
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FieldSuite</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="app-body">
+@if (Current.IsAuthenticated)
+{
+    <div class="app-shell">
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-mark">FS</span>
+                <span class="brand-text">FieldSuite</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">Overview</div>
+                <a class="nav-link @(Context.Request.Path == "/" || Context.Request.Path.StartsWithSegments("/Dashboard") ? "active" : "")" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Projects") ? "active" : "")" asp-controller="Projects" asp-action="Index">Projects</a>
+
+                <div class="nav-section">Safety &amp; EHS</div>
+                <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Safety") ? "active" : "")" asp-controller="Safety" asp-action="Index">Incidents &amp; Near-Misses</a>
+                <a class="nav-link @(Context.Request.Path == "/Safety/ToolboxTalks" ? "active" : "")" asp-controller="Safety" asp-action="ToolboxTalks">Toolbox Talks</a>
+
+                <div class="nav-section">Quality</div>
+                <a class="nav-link @(Context.Request.Path == "/Quality" ? "active" : "")" asp-controller="Quality" asp-action="Index">Snag / Punch List</a>
+                <a class="nav-link @(Context.Request.Path == "/Quality/Inspections" ? "active" : "")" asp-controller="Quality" asp-action="Inspections">Inspections</a>
+                <a class="nav-link @(Context.Request.Path == "/Quality/NCRs" ? "active" : "")" asp-controller="Quality" asp-action="NCRs">NCRs</a>
+
+                <div class="nav-section">Permits</div>
+                <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Permits") ? "active" : "")" asp-controller="Permits" asp-action="Index">Work Permits (ePTW)</a>
+
+                <div class="nav-section">Estimation</div>
+                <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Estimation") ? "active" : "")" asp-controller="Estimation" asp-action="Index">Estimates &amp; BOQ</a>
+
+                <div class="nav-section">Workforce</div>
+                <a class="nav-link @(Context.Request.Path == "/Workforce" || Context.Request.Path == "/Workforce/Attendance" ? "active" : "")" asp-controller="Workforce" asp-action="Index">Attendance</a>
+                <a class="nav-link @(Context.Request.Path == "/Workforce/Workers" ? "active" : "")" asp-controller="Workforce" asp-action="Workers">Workers</a>
+                <a class="nav-link @(Context.Request.Path == "/Workforce/Contractors" ? "active" : "")" asp-controller="Workforce" asp-action="Contractors">Contractors</a>
+
+                <div class="nav-section">Intelligence</div>
+                <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Assistant") ? "active" : "")" asp-controller="Assistant" asp-action="Index">AI Assistant</a>
+            </nav>
+        </aside>
+
+        <div class="app-main">
+            <header class="app-topbar">
+                <div class="topbar-context">
+                    <span class="text-muted small">Verma Construction</span>
+                </div>
+                <div class="topbar-actions">
+                    @await Component.InvokeAsync("Notifications")
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            @Current.FullName <span class="badge bg-secondary">@Current.Role</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item">Sign out</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <main class="app-content">
+                @if (TempData["Success"] is string success && !string.IsNullOrEmpty(success))
+                {
+                    <div class="alert alert-success alert-dismissible fade show">
+                        @success
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @if (TempData["Error"] is string error && !string.IsNullOrEmpty(error))
+                {
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        @error
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container py-5">
+        @RenderBody()
+    </div>
+}
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

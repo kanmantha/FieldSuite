@@ -1,0 +1,85 @@
+@model IReadOnlyList<FieldSuite.Domain.Entities.WorkPermit>
+@using FieldSuite.Web.ViewModels
+@{
+    ViewData["Title"] = "Work Permits";
+    var activeCount = (int)ViewBag.ActiveCount;
+    var pendingCount = (int)ViewBag.PendingCount;
+    var expiringSoon = (int)ViewBag.ExpiringSoonCount;
+    var curStatus = (FieldSuite.Domain.Common.PermitStatus?)ViewBag.CurrentStatus;
+    var curType = (FieldSuite.Domain.Common.PermitType?)ViewBag.CurrentType;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Work Permits (ePTW)</h4>
+        <span class="text-muted small">Digital permit-to-work across the project lifecycle</span>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-action="Create">+ New permit</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4"><div class="kpi-card success"><div class="kpi-label">Active</div><div class="kpi-value">@activeCount</div></div></div>
+    <div class="col-md-4"><div class="kpi-card warning"><div class="kpi-label">Awaiting approval</div><div class="kpi-value">@pendingCount</div></div></div>
+    <div class="col-md-4"><div class="kpi-card @(expiringSoon > 0 ? "danger" : "success")"><div class="kpi-label">Expiring in 24h</div><div class="kpi-value">@expiringSoon</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white">
+        <form method="get" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <select name="status" class="form-select form-select-sm" aria-label="Status filter">
+                    <option value="">All statuses</option>
+                    @foreach (var opt in Html.GetEnumSelectList<FieldSuite.Domain.Common.PermitStatus>())
+                    {
+                        var selected = curStatus.HasValue && ((int)curStatus.Value).ToString() == opt.Value;
+                        <option value="@opt.Value" selected="@selected">@opt.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <select name="type" class="form-select form-select-sm" aria-label="Type filter">
+                    <option value="">All types</option>
+                    @foreach (var opt in Html.GetEnumSelectList<FieldSuite.Domain.Common.PermitType>())
+                    {
+                        var selected = curType.HasValue && ((int)curType.Value).ToString() == opt.Value;
+                        <option value="@opt.Value" selected="@selected">@opt.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+            </div>
+            <div class="col-auto">
+                <a class="btn btn-sm btn-link text-muted" asp-action="Index">Clear</a>
+            </div>
+        </form>
+    </div>
+    <table class="table table-hover mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Reference</th><th>Title</th><th>Project</th><th>Type</th><th>Requested start</th><th>Risk</th><th>Status</th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No permits match the current filters.</td></tr>
+        }
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td class="fw-semibold">@p.Reference</td>
+                <td>@p.Title</td>
+                <td class="small">@(p.Project?.Name ?? "—")</td>
+                <td><span class="badge bg-secondary">@p.Type</span></td>
+                <td class="small">@p.RequestedStart.ToString("dd MMM yyyy HH:mm")</td>
+                <td><span class="badge bg-@PermitBadges.RiskBadge(p.RiskLevel)">@p.RiskLevel</span></td>
+                <td><span class="badge bg-@PermitBadges.StatusBadge(p.Status)">@p.Status</span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Details" asp-route-id="@p.Id">Open</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

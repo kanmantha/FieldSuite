@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FieldSuite.Domain/FieldSuite.Domain.csproj" />
+    <Project Path="src/FieldSuite.Infrastructure/FieldSuite.Infrastructure.csproj" />
+    <Project Path="src/FieldSuite.Web/FieldSuite.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FieldSuite.Tests/FieldSuite.Tests.csproj" />
+  </Folder>
+</Solution>

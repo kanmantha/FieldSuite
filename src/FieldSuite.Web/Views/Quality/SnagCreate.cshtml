@@ -1,0 +1,56 @@
+@model FieldSuite.Web.ViewModels.SnagCreateVm
+@{
+    ViewData["Title"] = "Raise Snag";
+}
+<h4 class="fw-bold mb-3">Raise snag</h4>
+<div class="card" style="max-width:760px">
+    <div class="card-body">
+        <form asp-action="SnagCreate" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Project *</label>
+                    <select asp-for="ProjectId" class="form-select" asp-items="ViewBag.Projects"><option value="">Select project</option></select>
+                    <span asp-validation-for="ProjectId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Priority</label>
+                    <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<SnagPriority>()"></select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description *</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Location *</label>
+                    <input asp-for="Location" class="form-control" placeholder="Level / grid / room" />
+                    <span asp-validation-for="Location" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Due date</label>
+                    <input asp-for="DueDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Assign to</label>
+                    <select asp-for="AssignedToId" class="form-select" asp-items="ViewBag.Users"><option value="">Leave unassigned</option></select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Photo</label>
+                    <input asp-for="Photo" type="file" class="form-control" accept=".jpg,.jpeg,.png,.gif,.webp" />
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Raise snag</button>
+                <a class="btn btn-outline-secondary" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

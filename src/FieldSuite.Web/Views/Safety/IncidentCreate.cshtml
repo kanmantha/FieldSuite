@@ -1,0 +1,79 @@
+@model FieldSuite.Web.ViewModels.IncidentCreateVm
+@{
+    ViewData["Title"] = "Report incident";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Report incident / near-miss</h4>
+        <span class="text-muted small">A reference is issued automatically once the report is saved</span>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="Index">Back to incidents</a>
+</div>
+
+<div class="card" style="max-width: 880px;">
+    <div class="card-body">
+        <form asp-action="IncidentCreate" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Project *</label>
+                    <select asp-for="ProjectId" class="form-select">
+                        <option value="">Select a project…</option>
+                        @foreach (var item in (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Projects)
+                        {
+                            <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="ProjectId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Type</label>
+                    <select asp-for="Type" asp-items="Html.GetEnumSelectList<IncidentType>()" class="form-select"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Severity *</label>
+                    <select asp-for="Severity" asp-items="Html.GetEnumSelectList<Severity>()" class="form-select"></select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input asp-for="Title" class="form-control" placeholder="Short description of what happened" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">What happened?</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Sequence of events, people involved, immediate action taken"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Location *</label>
+                    <input asp-for="Location" class="form-control" placeholder="Area / level / equipment" />
+                    <span asp-validation-for="Location" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Occurred at (UTC)</label>
+                    <input asp-for="OccurredAt" type="datetime-local" class="form-control" value="@Model.OccurredAt.ToString("yyyy-MM-ddTHH:mm")" />
+                    <span asp-validation-for="OccurredAt" class="text-danger small"></span>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Reported by</label>
+                    <input class="form-control" value="@User.Identity?.Name" disabled />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Root cause (initial)</label>
+                    <textarea asp-for="RootCause" class="form-control" rows="2" placeholder="Optional — preliminary cause or contributing factors"></textarea>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Report incident</button>
+                <button type="submit" name="saveAsDraft" value="draft" class="btn btn-outline-secondary">Save as draft</button>
+                <a class="btn btn-link text-muted" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

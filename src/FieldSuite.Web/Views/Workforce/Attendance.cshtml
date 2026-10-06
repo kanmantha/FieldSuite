@@ -1,0 +1,114 @@
+@model FieldSuite.Web.ViewModels.AttendanceHistoryViewModel
+@using FieldSuite.Web.ViewModels
+@{
+    ViewData["Title"] = "Attendance history";
+    var filterDate = Model.Date?.ToString("yyyy-MM-dd") ?? string.Empty;
+    var formDate = (Model.Date ?? DateTime.UtcNow.Date).ToString("yyyy-MM-dd");
+    var statusOptions = Html.GetEnumSelectList<FieldSuite.Domain.Common.AttendanceStatus>();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Attendance history</h4>
+        <span class="text-muted small">Filter by date / project · latest 300 records</span>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="Index">Today board</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-white">
+        <form method="get" asp-action="Attendance" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <input type="date" name="date" value="@filterDate" class="form-control form-control-sm" aria-label="Date" />
+            </div>
+            <div class="col-auto">
+                @Html.DropDownList("projectId", Model.Projects, "All projects", new { @class = "form-select form-select-sm", id = "filter-project" })
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+            </div>
+            <div class="col-auto">
+                <a class="btn btn-sm btn-link text-muted" asp-action="Attendance">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-white fw-semibold">+ Record attendance</div>
+    <div class="card-body">
+        <form asp-action="AttendanceCreate" method="post" class="row g-2 align-items-end">
+            @Html.AntiForgeryToken()
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Worker *</label>
+                @Html.DropDownList("workerId", Model.Workers, "Select worker", new { @class = "form-select", id = "record-worker", required = "required" })
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Project *</label>
+                @Html.DropDownList("projectId", Model.Projects, "Select project", new { @class = "form-select", id = "record-project", required = "required" })
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Date *</label>
+                <input type="date" name="workDate" value="@formDate" class="form-control" required />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Status</label>
+                @Html.DropDownList("status", statusOptions, new { @class = "form-select", id = "record-status" })
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small mb-1">In</label>
+                <input type="time" name="clockIn" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small mb-1">Out</label>
+                <input type="time" name="clockOut" class="form-control" />
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary btn-sm">Save attendance</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <table class="table table-sm table-hover mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Worker</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Clock in</th>
+            <th>Clock out</th>
+            <th class="text-end">Hours</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.Rows.Count == 0)
+        {
+            <tr><td colspan="7" class="text-center text-muted py-4">No attendance records match the current filters.</td></tr>
+        }
+        @foreach (var record in Model.Rows)
+        {
+            <tr>
+                <td>@record.WorkDate.ToString("dd MMM yyyy")</td>
+                <td class="fw-semibold">
+                    @if (record.Worker != null)
+                    {
+                        <a asp-action="WorkerDetails" asp-route-id="@record.WorkerId">@record.Worker.FullName</a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </td>
+                <td class="small">@(record.Project?.Name ?? "—")</td>
+                <td><span class="badge bg-@(WorkforceBadges.Attendance(record.Status))">@record.Status</span></td>
+                <td class="small">@(record.ClockIn?.ToString("HH:mm") ?? "—")</td>
+                <td class="small">@(record.ClockOut?.ToString("HH:mm") ?? "—")</td>
+                <td class="text-end">@(record.HoursWorked?.ToString("N2") ?? "—")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,69 @@
+@model FieldSuite.Domain.Entities.ToolboxTalk
+@{
+    ViewData["Title"] = "Toolbox talk";
+    var workers = Model.Attendances
+        .Where(a => a.Worker is not null)
+        .OrderBy(a => a.Worker!.FullName)
+        .ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">@Model.Topic</h4>
+        <span class="text-muted small">@Model.TalkDate.ToString("dd MMM yyyy HH:mm") UTC · @(Model.Project?.Name ?? "—")</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-secondary" asp-action="ToolboxTalks">All talks</a>
+        <a class="btn btn-sm btn-outline-primary" asp-action="ToolboxTalkCreate">+ New talk</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Session details</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 detail-label">Project</div><div class="col-8">@(Model.Project?.Name ?? "—")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Topic</div><div class="col-8">@Model.Topic</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Date</div><div class="col-8">@Model.TalkDate.ToString("dd MMM yyyy HH:mm") UTC</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Duration</div><div class="col-8">@Model.DurationMinutes minutes</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Facilitator</div><div class="col-8">@(Model.Facilitator?.FullName ?? "—")</div></div>
+                <div class="row">
+                    <div class="col-12 detail-label mb-1">Notes</div>
+                    <div class="col-12"><pre class="mb-0 small" style="white-space: pre-wrap;">@(string.IsNullOrEmpty(Model.Notes) ? "—" : Model.Notes)</pre></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+                <span>Attendance</span>
+                <span class="badge bg-secondary">@workers.Count worker(s)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                    <tr>
+                        <th>Worker</th><th>Job title</th><th>Shift</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @if (!workers.Any())
+                    {
+                        <tr><td colspan="3" class="text-center text-muted py-4">No workers were recorded for this talk.</td></tr>
+                    }
+                    @foreach (var a in workers)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@a.Worker!.FullName</td>
+                            <td class="small">@(string.IsNullOrEmpty(a.Worker!.JobTitle) ? "—" : a.Worker.JobTitle)</td>
+                            <td><span class="badge bg-secondary">@a.Worker.Shift</span></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

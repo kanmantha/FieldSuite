@@ -1,0 +1,23 @@
+@using FieldSuite.Domain.Entities
+@model IReadOnlyList<FieldSuite.Domain.Entities.Notification>
+<div class="dropdown">
+    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="badge rounded-pill bg-danger">@(ViewBag.UnreadCount)</span>
+        Alerts
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end notifications-menu">
+        @if (!Model.Any())
+        {
+            <li><span class="dropdown-item-text text-muted">No notifications yet</span></li>
+        }
+        @foreach (var n in Model)
+        {
+            <li>
+                <a class="dropdown-item @(n.IsRead ? "" : "fw-semibold")" href="@n.Link">
+                    <div>@n.Message</div>
+                    <small class="text-muted">@n.CreatedAt.ToString("dd MMM HH:mm") UTC</small>
+                </a>
+            </li>
+        }
+    </ul>
+</div>

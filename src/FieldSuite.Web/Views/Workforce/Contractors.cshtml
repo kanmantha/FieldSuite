@@ -1,0 +1,57 @@
+@model FieldSuite.Web.ViewModels.ContractorsViewModel
+@{
+    ViewData["Title"] = "Contractors";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Contractor companies</h4>
+        <span class="text-muted small">Subcontracted trades and their crew</span>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-action="ContractorCreate">+ New contractor</a>
+</div>
+
+<div class="mb-3 d-flex gap-2">
+    <a class="btn btn-sm @(Model.Active == null ? "btn-primary" : "btn-outline-secondary")" asp-action="Contractors">All</a>
+    <a class="btn btn-sm @(Model.Active == true ? "btn-primary" : "btn-outline-secondary")" asp-action="Contractors" asp-route-active="true">Active</a>
+    <a class="btn btn-sm @(Model.Active == false ? "btn-primary" : "btn-outline-secondary")" asp-action="Contractors" asp-route-active="false">Inactive</a>
+</div>
+
+<div class="card">
+    <table class="table table-sm table-hover mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Trade</th>
+            <th>Contact person</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th class="text-center">Workers</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.Rows.Count == 0)
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No contractors match the current filter.</td></tr>
+        }
+        @foreach (var row in Model.Rows)
+        {
+            var contractor = row.Contractor;
+            <tr>
+                <td class="fw-semibold">@contractor.Name</td>
+                <td class="small">@contractor.Trade</td>
+                <td class="small">@contractor.ContactPerson</td>
+                <td class="small">@contractor.Phone</td>
+                <td class="small">@contractor.Email</td>
+                <td class="text-center"><span class="badge bg-secondary">@row.WorkerCount</span></td>
+                <td><span class="badge bg-@(contractor.IsActive ? "success" : "secondary")">@(contractor.IsActive ? "Active" : "Inactive")</span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="ContractorEdit" asp-route-id="@contractor.Id">Edit</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

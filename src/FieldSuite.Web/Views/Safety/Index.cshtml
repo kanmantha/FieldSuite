@@ -1,0 +1,91 @@
+@model IReadOnlyList<FieldSuite.Domain.Entities.Incident>
+@using FieldSuite.Web.ViewModels
+@{
+    ViewData["Title"] = "Safety — Incidents & Near-Misses";
+    var openCount = (int)ViewBag.OpenCount;
+    var investigatingCount = (int)ViewBag.InvestigatingCount;
+    var criticalCount = (int)ViewBag.CriticalCount;
+    var draftCount = (int)ViewBag.DraftCount;
+    var curStatus = (IncidentStatus?)ViewBag.CurrentStatus;
+    var projects = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Projects;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Incidents &amp; Near-Misses</h4>
+        <span class="text-muted small">Report, investigate and close safety events</span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary btn-sm" asp-action="ToolboxTalks">Toolbox talks</a>
+        <a class="btn btn-primary btn-sm" asp-action="IncidentCreate">+ Report incident</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3"><div class="kpi-card @(openCount > 0 ? "warning" : "success")"><div class="kpi-label">Open incidents</div><div class="kpi-value">@openCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="kpi-card @(investigatingCount > 0 ? "warning" : "success")"><div class="kpi-label">Investigating</div><div class="kpi-value">@investigatingCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="kpi-card @(criticalCount > 0 ? "danger" : "success")"><div class="kpi-label">Critical open</div><div class="kpi-value">@criticalCount</div></div></div>
+    <div class="col-6 col-md-3"><div class="kpi-card"><div class="kpi-label">Drafts</div><div class="kpi-value">@draftCount</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white">
+        <form method="get" asp-action="Index" class="row g-2 align-items-center">
+            <div class="col-auto">
+                <select name="status" class="form-select form-select-sm" aria-label="Status filter">
+                    <option value="">All statuses</option>
+                    @foreach (var opt in Html.GetEnumSelectList<IncidentStatus>())
+                    {
+                        var selected = curStatus.HasValue && ((int)curStatus.Value).ToString() == opt.Value;
+                        <option value="@opt.Value" selected="@selected">@opt.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <select name="projectId" class="form-select form-select-sm" aria-label="Project filter">
+                    <option value="">All projects</option>
+                    @foreach (var item in projects)
+                    {
+                        <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
+            </div>
+            <div class="col-auto">
+                <a class="btn btn-sm btn-link text-muted" asp-action="Index">Clear</a>
+            </div>
+        </form>
+    </div>
+    <table class="table table-hover table-sm mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Reference</th><th>Title</th><th>Project</th><th>Type</th><th>Severity</th>
+            <th>Occurred</th><th>Reported by</th><th>Status</th><th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="9" class="text-center text-muted py-4">No incidents match the current filters.</td></tr>
+        }
+        @foreach (var i in Model)
+        {
+            <tr>
+                <td class="fw-semibold">@i.Reference</td>
+                <td>@i.Title</td>
+                <td class="small">@(i.Project?.Name ?? "—")</td>
+                <td><span class="badge bg-@SafetyBadges.TypeBadge(i.Type)">@i.Type</span></td>
+                <td><span class="badge bg-@SafetyBadges.SeverityBadge(i.Severity)">@i.Severity</span></td>
+                <td class="small">@i.OccurredAt.ToString("dd MMM yyyy HH:mm")</td>
+                <td class="small">@(i.ReportedBy?.FullName ?? "—")</td>
+                <td><span class="badge bg-@SafetyBadges.StatusBadge(i.Status)">@i.Status</span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="IncidentDetails" asp-route-id="@i.Id">Open</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

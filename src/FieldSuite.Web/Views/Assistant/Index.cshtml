@@ -1,0 +1,112 @@
+@{
+    ViewData["Title"] = "AI Assistant";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">AI Assistant</h4>
+        <span class="text-muted small">Ask about permits, incidents, snags and workforce — rule-based offline, LLM when configured</span>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white fw-semibold">Chat</div>
+            <div class="card-body">
+                <div id="chat-log" class="d-flex flex-column gap-2 mb-3" style="min-height: 240px; max-height: 480px; overflow-y: auto;">
+                    <div class="chat-bubble">Hi @User.Identity!.Name — ask me anything about your sites. Try: "how many open incidents?" or "which permits are pending?"</div>
+                </div>
+                <form id="chat-form" class="d-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <input id="chat-input" class="form-control" placeholder="Type your question..." autocomplete="off" />
+                    <button class="btn btn-primary" type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card mb-3">
+            <div class="card-header bg-white fw-semibold">Voice / note → structured draft</div>
+            <div class="card-body">
+                <p class="small text-muted">Paste a field voice note or photo caption and get a structured incident or snag draft (LLM-powered with offline fallback).</p>
+                <select id="draft-kind" class="form-select form-select-sm mb-2">
+                    <option value="incident">Incident</option>
+                    <option value="snag">Snag</option>
+                </select>
+                <textarea id="draft-input" class="form-control form-select-sm mb-2" rows="4" placeholder="e.g. Worker slipped on wet concrete near grid D, no injury, area cordoned off"></textarea>
+                <button id="draft-btn" class="btn btn-outline-primary btn-sm w-100">Generate draft</button>
+                <pre id="draft-output" class="small mt-2 mb-0" style="white-space: pre-wrap;"></pre>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-white fw-semibold">AI mode</div>
+            <div class="card-body small text-muted">
+                Configure <code>Llm:BaseUrl</code>, <code>Llm:Model</code> (and optional <code>Llm:ApiKey</code>) in appsettings.json to point at
+                OpenAI, Ollama or any OpenAI-compatible endpoint. Without it, the assistant uses the built-in rules engine.
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const form = document.getElementById('chat-form');
+        const input = document.getElementById('chat-input');
+        const log = document.getElementById('chat-log');
+        const token = document.querySelector('#chat-form input[name="__RequestVerificationToken"]')?.value;
+
+        function addBubble(text, isUser) {
+            const div = document.createElement('div');
+            div.className = 'chat-bubble' + (isUser ? ' user' : '');
+            div.textContent = text;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+            return div;
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const question = input.value.trim();
+            if (!question) return;
+            addBubble(question, true);
+            input.value = '';
+            const pending = addBubble('Thinking...', false);
+            try {
+                const resp = await fetch('/Assistant/Ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                    body: new URLSearchParams({ question, __RequestVerificationToken: token })
+                });
+                const data = await resp.json();
+                pending.textContent = data.answer + (data.usedLlm ? '' : '  [offline rules mode]');
+            } catch (err) {
+                pending.textContent = 'Something went wrong: ' + err;
+            }
+        });
+
+        document.getElementById('draft-btn').addEventListener('click', async () => {
+            const rawInput = document.getElementById('draft-input').value.trim();
+            const kind = document.getElementById('draft-kind').value;
+            const out = document.getElementById('draft-output');
+            if (!rawInput) { out.textContent = 'Enter a note first.'; return; }
+            out.textContent = 'Generating...';
+            try {
+                const resp = await fetch('/Assistant/Draft', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ kind, rawInput, __RequestVerificationToken: token })
+                });
+                const d = await resp.json();
+                out.textContent =
+                    'Title: ' + d.title + '\n' +
+                    'Category: ' + d.category + '\n' +
+                    'Severity: ' + d.severity + '\n' +
+                    'Description: ' + d.description + '\n' +
+                    (d.usedLlm ? '(LLM)' : '(offline heuristic)');
+            } catch (err) {
+                out.textContent = 'Error: ' + err;
+            }
+        });
+    </script>
+}

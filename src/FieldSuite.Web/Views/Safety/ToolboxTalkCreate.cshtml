@@ -1,0 +1,74 @@
+@model FieldSuite.Web.ViewModels.ToolboxTalkCreateVm
+@{
+    ViewData["Title"] = "New toolbox talk";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">New toolbox talk</h4>
+        <span class="text-muted small">Select the workers present to record attendance</span>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" asp-action="ToolboxTalks">Back to talks</a>
+</div>
+
+<div class="card" style="max-width: 880px;">
+    <div class="card-body">
+        <form asp-action="ToolboxTalkCreate" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Project *</label>
+                    <select asp-for="ProjectId" class="form-select">
+                        <option value="">Select a project…</option>
+                        @if (Model.Projects is not null)
+                        {
+                            foreach (var item in Model.Projects)
+                            {
+                                <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                            }
+                        }
+                    </select>
+                    <span asp-validation-for="ProjectId" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Topic *</label>
+                    <input asp-for="Topic" class="form-control" placeholder="e.g. Working at height — pre-task brief" />
+                    <span asp-validation-for="Topic" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Talk date &amp; time (UTC)</label>
+                    <input asp-for="TalkDate" type="datetime-local" class="form-control" value="@Model.TalkDate.ToString("yyyy-MM-ddTHH:mm")" />
+                    <span asp-validation-for="TalkDate" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Duration (minutes) *</label>
+                    <input asp-for="DurationMinutes" type="number" min="1" max="600" class="form-control" />
+                    <span asp-validation-for="DurationMinutes" class="text-danger small"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Facilitator</label>
+                    <input class="form-control" value="@User.Identity?.Name" disabled />
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Notes / key points</label>
+                    <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Agenda, observations, actions agreed"></textarea>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Workers present</label>
+                    <select asp-for="WorkerIds" asp-items="Model.Workers" class="form-select" size="12" multiple></select>
+                    <span asp-validation-for="WorkerIds" class="text-danger small"></span>
+                    <div class="form-text small text-muted">Hold Ctrl (or Cmd) to select several workers. Attendance rows are created for every selected worker.</div>
+                </div>
+            </div>
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save toolbox talk</button>
+                <a class="btn btn-outline-secondary" asp-action="ToolboxTalks">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

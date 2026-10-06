@@ -1,0 +1,156 @@
+@model FieldSuite.Web.ViewModels.WorkerDetailsViewModel
+@using FieldSuite.Web.ViewModels
+@{
+    ViewData["Title"] = Model.Worker.FullName;
+    var worker = Model.Worker;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">
+            @worker.FullName
+            <span class="badge bg-@(worker.IsActive ? "success" : "secondary")">@(worker.IsActive ? "Active" : "Inactive")</span>
+        </h4>
+        <span class="text-muted small">
+            @worker.JobTitle · @worker.Shift shift@(worker.ContractorCompany != null ? " · " + worker.ContractorCompany.Name : string.Empty)
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-sm btn-outline-primary" asp-action="WorkerEdit" asp-route-id="@worker.Id">Edit</a>
+        <a class="btn btn-sm btn-outline-secondary" asp-action="Workers">Back to workers</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Profile</div>
+            <div class="card-body">
+                <div class="row mb-2"><div class="col-4 detail-label">Full name</div><div class="col-8">@worker.FullName</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Job title</div><div class="col-8">@(string.IsNullOrWhiteSpace(worker.JobTitle) ? "—" : worker.JobTitle)</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Phone</div><div class="col-8">@(string.IsNullOrWhiteSpace(worker.Phone) ? "—" : worker.Phone)</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Email</div><div class="col-8">@(string.IsNullOrWhiteSpace(worker.Email) ? "—" : worker.Email)</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Hire date</div><div class="col-8">@worker.HireDate.ToString("dd MMM yyyy")</div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Shift</div><div class="col-8"><span class="badge bg-secondary">@worker.Shift</span></div></div>
+                <div class="row mb-2"><div class="col-4 detail-label">Contractor</div><div class="col-8">@(worker.ContractorCompany?.Name ?? "Direct hire")</div></div>
+                <div class="row"><div class="col-4 detail-label">Status</div><div class="col-8"><span class="badge bg-@(worker.IsActive ? "success" : "secondary")">@(worker.IsActive ? "Active" : "Inactive")</span></div></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Onboarding documents</div>
+            <div class="card-body">
+                <form asp-action="DocumentAdd" method="post" class="row g-2 align-items-end mb-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="workerId" value="@worker.Id" />
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1">Type</label>
+                        @Html.DropDownList("type", Html.GetEnumSelectList<FieldSuite.Domain.Common.WorkerDocumentType>(), new { @class = "form-select form-select-sm", id = "doc-type" })
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small mb-1">Number</label>
+                        <input name="documentNumber" class="form-control form-control-sm" placeholder="e.g. AB123456" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Issued</label>
+                        <input type="date" name="issuedDate" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">Expiry</label>
+                        <input type="date" name="expiryDate" class="form-control form-control-sm" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label small mb-1">File / ref</label>
+                        <input name="filePath" class="form-control form-control-sm" placeholder="path or ref" />
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-sm btn-primary">+ Add document</button>
+                    </div>
+                </form>
+
+                <table class="table table-sm mb-0 align-middle">
+                    <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Number</th>
+                        <th>Issued</th>
+                        <th>Expiry</th>
+                        <th>File / ref</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @if (Model.Documents.Count == 0)
+                    {
+                        <tr><td colspan="6" class="text-center text-muted py-3">No documents on file.</td></tr>
+                    }
+                    @foreach (var doc in Model.Documents)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@doc.Type</td>
+                            <td class="small">@(string.IsNullOrWhiteSpace(doc.DocumentNumber) ? "—" : doc.DocumentNumber)</td>
+                            <td class="small">@(doc.IssuedDate?.ToString("dd MMM yyyy") ?? "—")</td>
+                            <td class="small">
+                                @if (doc.ExpiryDate.HasValue)
+                                {
+                                    <span class="badge bg-@(WorkforceBadges.Expiry(doc.ExpiryDate))">@doc.ExpiryDate.Value.ToString("dd MMM yyyy")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td class="small">@(string.IsNullOrWhiteSpace(doc.FilePath) ? "—" : doc.FilePath)</td>
+                            <td class="text-end">
+                                <form asp-action="DocumentDelete" method="post" class="d-inline" onsubmit="return confirm('Delete this document?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@doc.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <span class="fw-semibold">Attendance — last 15 records</span>
+        <a class="btn btn-sm btn-outline-secondary" asp-action="Attendance">View full history</a>
+    </div>
+    <table class="table table-sm mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Project</th>
+            <th>Status</th>
+            <th>Clock in</th>
+            <th>Clock out</th>
+            <th class="text-end">Hours</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.RecentAttendance.Count == 0)
+        {
+            <tr><td colspan="6" class="text-center text-muted py-3">No attendance recorded for this worker.</td></tr>
+        }
+        @foreach (var record in Model.RecentAttendance)
+        {
+            <tr>
+                <td>@record.WorkDate.ToString("dd MMM yyyy")</td>
+                <td class="small">@(record.Project?.Name ?? "—")</td>
+                <td><span class="badge bg-@(WorkforceBadges.Attendance(record.Status))">@record.Status</span></td>
+                <td class="small">@(record.ClockIn?.ToString("HH:mm") ?? "—")</td>
+                <td class="small">@(record.ClockOut?.ToString("HH:mm") ?? "—")</td>
+                <td class="text-end">@(record.HoursWorked?.ToString("N2") ?? "—")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

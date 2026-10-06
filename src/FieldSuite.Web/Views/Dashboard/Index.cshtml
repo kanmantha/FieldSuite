@@ -1,0 +1,124 @@
+@using FieldSuite.Infrastructure.Services
+@{
+    ViewData["Title"] = "Dashboard";
+    var s = (DashboardStats)ViewBag.Stats;
+    var nudges = (List<Nudge>)ViewBag.Nudges;
+    var incidents = (List<FieldSuite.Domain.Entities.Incident>)ViewBag.RecentIncidents;
+    var permits = (List<FieldSuite.Domain.Entities.WorkPermit>)ViewBag.UpcomingPermits;
+    var snags = (List<FieldSuite.Domain.Entities.Snag>)ViewBag.UrgentSnags;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Operations Dashboard</h4>
+        <span class="text-muted small">Cross-module snapshot for your organization</span>
+    </div>
+    <a class="btn btn-sm btn-outline-primary" asp-controller="Assistant" asp-action="Index">Ask the AI Assistant</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Active projects</div><div class="kpi-value">@s.ActiveProjects</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OpenIncidents > 0 ? "danger" : "success")"><div class="kpi-label">Open incidents</div><div class="kpi-value">@s.OpenIncidents</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OverdueActions > 0 ? "danger" : "success")"><div class="kpi-label">Overdue actions</div><div class="kpi-value">@s.OverdueActions</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card warning"><div class="kpi-label">Active permits</div><div class="kpi-value">@s.ActivePermits</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OpenSnags > 0 ? "warning" : "success")"><div class="kpi-label">Open snags</div><div class="kpi-value">@s.OpenSnags</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Present today</div><div class="kpi-value">@s.WorkersPresentToday<span class="fs-6 text-muted">/@s.TotalActiveWorkers</span></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card warning"><div class="kpi-label">Docs expiring 30d</div><div class="kpi-value">@s.ExpiringDocuments</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Pending approvals</div><div class="kpi-value">@s.PendingPermits</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Open NCRs</div><div class="kpi-value">@s.OpenNCRs</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card success"><div class="kpi-label">Estimates sent</div><div class="kpi-value">@s.SentEstimates</div></div></div>
+</div>
+
+@if (nudges.Count > 0)
+{
+    <div class="card mb-3">
+        <div class="card-header bg-white fw-semibold">Smart Nudges <span class="badge bg-danger">@nudges.Count</span></div>
+        <ul class="list-group list-group-flush">
+            @foreach (var n in nudges.Take(8))
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        <span class="badge bg-@(n.Severity == "danger" ? "danger" : "warning") text-uppercase">@n.Kind</span>
+                        @n.Message
+                    </span>
+                    <a class="btn btn-sm btn-outline-secondary" href="@n.Link">Review</a>
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Recent incidents &amp; near-misses</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Ref</th><th>Title</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach (var i in incidents)
+                    {
+                        <tr>
+                            <td><a asp-controller="Safety" asp-action="IncidentDetails" asp-route-id="@i.Id">@i.Reference</a></td>
+                            <td class="small">@i.Title</td>
+                            <td><span class="badge bg-secondary">@i.Status</span></td>
+                        </tr>
+                    }
+                    @if (incidents.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-muted small p-3">No incidents recorded.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Permits awaiting / active</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Ref</th><th>Type</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach (var p in permits)
+                    {
+                        <tr>
+                            <td><a asp-controller="Permits" asp-action="Details" asp-route-id="@p.Id">@p.Reference</a></td>
+                            <td class="small">@p.Type</td>
+                            <td><span class="badge bg-@(p.Status == PermitStatus.PendingApproval ? "warning" : "success")">@p.Status</span></td>
+                        </tr>
+                    }
+                    @if (permits.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-muted small p-3">No pending or active permits.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-semibold">Snags by due date</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead><tr><th>Ref</th><th>Title</th><th>Due</th></tr></thead>
+                    <tbody>
+                    @foreach (var s2 in snags)
+                    {
+                        <tr>
+                            <td><a asp-controller="Quality" asp-action="SnagDetails" asp-route-id="@s2.Id">@s2.Reference</a></td>
+                            <td class="small">@s2.Title</td>
+                            <td class="small @(s2.DueDate != null && s2.DueDate < DateTime.UtcNow.Date ? "text-danger" : "")">@(s2.DueDate?.ToString("dd MMM") ?? "—")</td>
+                        </tr>
+                    }
+                    @if (snags.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-muted small p-3">No open snags.</td></tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

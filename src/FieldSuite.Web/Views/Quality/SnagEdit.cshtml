@@ -1,0 +1,50 @@
+@model FieldSuite.Web.ViewModels.SnagEditVm
+@{
+    ViewData["Title"] = "Edit Snag";
+}
+<h4 class="fw-bold mb-3">Edit snag @Model.Id</h4>
+<div class="card" style="max-width:760px">
+    <div class="card-body">
+        <form asp-action="SnagEdit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <label class="form-label">Project *</label>
+                    <select asp-for="ProjectId" class="form-select" asp-items="ViewBag.Projects"></select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Priority</label>
+                    <select asp-for="Priority" class="form-select" asp-items="Html.GetEnumSelectList<SnagPriority>()"></select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Title *</label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Description *</label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Location *</label>
+                    <input asp-for="Location" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Due date</label>
+                    <input asp-for="DueDate" type="date" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Assign to</label>
+                    <select asp-for="AssignedToId" class="form-select" asp-items="ViewBag.Users"><option value="">Unassigned</option></select>
+                </div>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a class="btn btn-outline-secondary" asp-action="SnagDetails" asp-route-id="@Model.Id">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

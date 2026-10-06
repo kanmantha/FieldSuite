@@ -1,0 +1,212 @@
+﻿@model FieldSuite.Domain.Entities.Estimate
+@using FieldSuite.Web.ViewModels
+@{
+    ViewData["Title"] = Model.Reference + " — " + Model.Title;
+    var subtotal = EstimateTotals.Subtotal(Model);
+    var wasteAmt = EstimateTotals.WasteAmount(Model);
+    var marginAmt = EstimateTotals.MarginAmount(Model);
+    var grand = EstimateTotals.GrandTotal(Model);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0">@Model.Title</h2>
+        <small class="text-muted">@Model.Reference — @Model.ClientName</small>
+        @if (!string.IsNullOrEmpty(Model.Project?.Name))
+        {
+            <div><small>Project: @Model.Project.Name</small></div>
+        }
+        <div><span class="badge bg-secondary">@Model.Status</span> @(Model.ValidUntil.HasValue ? "Valid until " + Model.ValidUntil.Value.ToString("yyyy-MM-dd") : "")</div>
+    </div>
+    <div>
+        <a asp-action="Proposal" asp-route-id="@Model.Id" class="btn btn-outline-primary">Proposal</a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (User.IsInRole("Estimator") || User.IsInRole("Admin") || User.IsInRole("SiteManager"))
+{
+    <div class="card mb-3">
+        <div class="card-body">
+            <form asp-action="StatusChange" method="post" class="row g-2 align-items-end">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <div class="col-auto">
+                    <label class="form-label">Change Status</label>
+                    <select name="to" class="form-select">
+                        @if (Model.Status == FieldSuite.Domain.Common.EstimateStatus.Draft)
+                        {
+                            <option value="Sent">Sent</option>
+                            <option value="Expired">Expired</option>
+                            <option value="Rejected">Rejected</option>
+                        }
+                        @if (Model.Status == FieldSuite.Domain.Common.EstimateStatus.Sent)
+                        {
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Expired">Expired</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+<div class="row">
+    <div class="col-lg-8">
+        @foreach (var cat in Model.Categories.OrderBy(c => c.SortOrder))
+        {
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">@cat.Name</h5>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-end">Qty</th>
+                                <th>Unit</th>
+                                <th class="text-end">Unit Rate</th>
+                                <th class="text-end">Waste %</th>
+                                <th class="text-end">Line Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in cat.Items)
+                            {
+                                <tr>
+                                    <form asp-action="ItemEdit" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                    <td><input name="description" value="@item.Description" class="form-control form-control-sm" /></td>
+                                    <td class="text-end"><input name="quantity" value="@item.Quantity.ToString("0.00")" class="form-control form-control-sm text-end" style="font-variant-numeric: tabular-nums" /></td>
+                                    <td><input name="unit" value="@item.Unit" class="form-control form-control-sm" /></td>
+                                    <td class="text-end"><input name="unitRate" value="@item.UnitRate.ToString("0.00")" class="form-control form-control-sm text-end" style="font-variant-numeric: tabular-nums" /></td>
+                                    <td class="text-end"><input name="wastePercent" value="@item.WastePercent.ToString("0.00")" class="form-control form-control-sm text-end" style="font-variant-numeric: tabular-nums" /></td>
+                                    <td class="text-end" style="font-variant-numeric: tabular-nums">@EstimateTotals.ItemLineTotal(item).ToString("N2")</td>
+                                    <td class="text-end">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Save</button>
+                                    </td>
+                                    </form>
+                                    <td>
+                                        <form asp-action="ItemDelete" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this item?')">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                            <tr>
+                                <form asp-action="ItemAdd" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="categoryId" value="@cat.Id" />
+                                <td><input name="description" class="form-control form-control-sm" placeholder="Description" /></td>
+                                <td class="text-end"><input name="quantity" value="1.00" class="form-control form-control-sm text-end" style="font-variant-numeric: tabular-nums" /></td>
+                                <td><input name="unit" class="form-control form-control-sm" placeholder="ea" /></td>
+                                <td class="text-end"><input name="unitRate" class="form-control form-control-sm text-end" style="font-variant-numeric: tabular-nums" placeholder="0.00" /></td>
+                                <td class="text-end"><input name="wastePercent" value="0.00" class="form-control form-control-sm text-end" style="font-variant-numeric: tabular-nums" /></td>
+                                <td></td>
+                                <td class="text-end">
+                                    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+                                </td>
+                                </form>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-end fw-semibold">Category Subtotal</td>
+                                <td class="text-end fw-semibold" style="font-variant-numeric: tabular-nums">@EstimateTotals.CategorySubtotal(cat).ToString("N2")</td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        }
+        <div class="card mb-3">
+            <div class="card-body">
+                <form asp-action="CategoryAdd" method="post" class="row g-2 align-items-end">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="estimateId" value="@Model.Id" />
+                    <div class="col-md-6">
+                        <label class="form-label">Add Category</label>
+                        <input name="name" class="form-control" placeholder="Category Name" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-outline-secondary">Add Category</button>
+                    </div>
+                </form>
+                <div class="mt-2"><small class="text-muted">Suggest rate: fill unit/desc in add row to see hint (debounced).</small> <span id="suggestHint" class="ms-2 text-success"></span></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Totals</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <span>Subtotal (incl. waste)</span>
+                    <span style="font-variant-numeric: tabular-nums">@subtotal.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Waste amount</span>
+                    <span style="font-variant-numeric: tabular-nums">@wasteAmt.ToString("N2")</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Margin (@Model.MarginPercent.ToString("0.00")%)</span>
+                    <span style="font-variant-numeric: tabular-nums">@marginAmt.ToString("N2")</span>
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Grand total</span>
+                    <span style="font-variant-numeric: tabular-nums">@grand.ToString("N2")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let timeout;
+        document.addEventListener('input', function (e) {
+            if (e.target.name === 'unit' || e.target.name === 'description') {
+                const form = e.target.closest('form');
+                if (!form) return;
+                const unit = form.querySelector('input[name="unit"]')?.value;
+                const desc = form.querySelector('input[name="description"]')?.value;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    if (unit || desc) {
+                        fetch('/Estimation/SuggestRate?unit=' + encodeURIComponent(unit || '') + '&description=' + encodeURIComponent(desc || ''))
+                            .then(r => r.json())
+                            .then(d => {
+                                const hint = document.getElementById('suggestHint');
+                                if (hint && d.rate !== null && d.rate !== undefined) {
+                                    hint.textContent = 'Suggested: ' + Number(d.rate).toFixed(2) + ' (historical avg)';
+                                }
+                            });
+                    }
+                }, 300);
+            }
+        });
+    </script>
+}

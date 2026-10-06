@@ -1,0 +1,72 @@
+@model FieldSuite.Web.ViewModels.WorkersViewModel
+@{
+    ViewData["Title"] = "Workers";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">Workers</h4>
+        <span class="text-muted small">Direct hires and subcontracted crew on your books</span>
+    </div>
+    <a class="btn btn-primary btn-sm" asp-action="WorkerCreate">+ New worker</a>
+</div>
+
+<div class="mb-3 d-flex gap-2">
+    <a class="btn btn-sm @(Model.Active == true ? "btn-primary" : "btn-outline-secondary")" asp-action="Workers" asp-route-active="true">Active</a>
+    <a class="btn btn-sm @(Model.Active == false ? "btn-primary" : "btn-outline-secondary")" asp-action="Workers" asp-route-active="false">Inactive</a>
+    <a class="btn btn-sm @(Model.Active == null ? "btn-primary" : "btn-outline-secondary")" asp-action="Workers" asp-route-active="">All</a>
+</div>
+
+<div class="card">
+    <table class="table table-sm table-hover mb-0 align-middle">
+        <thead>
+        <tr>
+            <th>Worker</th>
+            <th>Job title</th>
+            <th>Shift</th>
+            <th>Contractor</th>
+            <th>Hire date</th>
+            <th>Documents</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Model.Rows.Count == 0)
+        {
+            <tr><td colspan="8" class="text-center text-muted py-4">No workers match the current filter.</td></tr>
+        }
+        @foreach (var row in Model.Rows)
+        {
+            var worker = row.Worker;
+            <tr>
+                <td class="fw-semibold">
+                    <a asp-action="WorkerDetails" asp-route-id="@worker.Id">@worker.FullName</a>
+                </td>
+                <td class="small">@worker.JobTitle</td>
+                <td><span class="badge bg-secondary">@worker.Shift</span></td>
+                <td class="small">@(worker.ContractorCompany?.Name ?? "Direct hire")</td>
+                <td class="small">@worker.HireDate.ToString("dd MMM yyyy")</td>
+                <td>
+                    @if (row.ExpiredDocs > 0)
+                    {
+                        <span class="badge bg-danger">@row.ExpiredDocs expired</span>
+                    }
+                    @if (row.ExpiringDocs > 0)
+                    {
+                        <span class="badge bg-warning text-dark">@row.ExpiringDocs expiring</span>
+                    }
+                    @if (row.ExpiredDocs == 0 && row.ExpiringDocs == 0)
+                    {
+                        <span class="badge bg-success">OK</span>
+                    }
+                </td>
+                <td><span class="badge bg-@(worker.IsActive ? "success" : "secondary")">@(worker.IsActive ? "Active" : "Inactive")</span></td>
+                <td class="text-end">
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="WorkerDetails" asp-route-id="@worker.Id">Open</a>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>

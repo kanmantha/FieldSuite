@@ -1,0 +1,98 @@
+﻿@model FieldSuite.Domain.Entities.Estimate
+@using FieldSuite.Web.ViewModels
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = Model.Reference;
+    var subtotal = EstimateTotals.Subtotal(Model);
+    var wasteAmt = EstimateTotals.WasteAmount(Model);
+    var marginAmt = EstimateTotals.MarginAmount(Model);
+    var grand = EstimateTotals.GrandTotal(Model);
+}
+<style>
+    @@media print { body { padding: 20px; } }
+</style>
+
+<div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+        <h3 class="mb-0">FieldSuite — Verma Construction</h3>
+        <small class="text-muted">Estimate: @Model.Reference</small>
+        <div><strong>Client:</strong> @Model.ClientName</div>
+        @if (Model.ValidUntil.HasValue)
+        {
+            <div><strong>Valid Until:</strong> @Model.ValidUntil.Value.ToString("yyyy-MM-dd")</div>
+        }
+    </div>
+    <div>
+        <button class="btn btn-primary d-print-none" onclick="window.print()">Print</button>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light d-print-none">Back</a>
+    </div>
+</div>
+
+@if (!string.IsNullOrWhiteSpace(Model.Notes))
+{
+    <div class="mb-3">
+        <strong>Notes:</strong>
+        <div>@Model.Notes</div>
+    </div>
+}
+
+@foreach (var cat in Model.Categories.OrderBy(c => c.SortOrder))
+{
+    <h5>@cat.Name</h5>
+    <table class="table table-sm table-bordered">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th class="text-end">Qty</th>
+                <th>Unit</th>
+                <th class="text-end">Unit Rate</th>
+                <th class="text-end">Waste %</th>
+                <th class="text-end">Line Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in cat.Items)
+            {
+                <tr>
+                    <td>@item.Description</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@item.Quantity.ToString("N2")</td>
+                    <td>@item.Unit</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@item.UnitRate.ToString("N2")</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@item.WastePercent.ToString("N2")</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@EstimateTotals.ItemLineTotal(item).ToString("N2")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5" class="text-end fw-semibold">Category Subtotal</td>
+                <td class="text-end fw-semibold" style="font-variant-numeric: tabular-nums">@EstimateTotals.CategorySubtotal(cat).ToString("N2")</td>
+            </tr>
+        </tfoot>
+    </table>
+}
+
+<div class="row justify-content-end">
+    <div class="col-md-4">
+        <table class="table table-sm">
+            <tbody>
+                <tr>
+                    <td>Subtotal (incl. waste)</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@subtotal.ToString("N2")</td>
+                </tr>
+                <tr>
+                    <td>Margin (@Model.MarginPercent.ToString("0.00")%)</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@marginAmt.ToString("N2")</td>
+                </tr>
+                <tr class="fw-bold">
+                    <td>Grand total</td>
+                    <td class="text-end" style="font-variant-numeric: tabular-nums">@grand.ToString("N2")</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-4 small text-muted">
+    Rates valid until @(Model.ValidUntil?.ToString("yyyy-MM-dd") ?? "—"); excludes taxes unless stated.
+</div>
