@@ -45,6 +45,14 @@ dotnet run --project src/FieldSuite.Web
 
 **Optional AI:** set `Llm:BaseUrl`, `Llm:ApiKey`, `Llm:Model` in `appsettings.json` to any OpenAI-compatible endpoint. Leave empty to stay in offline rules mode.
 
+## Deploying to Render
+
+The repo ships cloud-ready (`Dockerfile`, `render.yaml`, `/health` endpoint).
+
+- The app binds to the `PORT` env var (Render injects it) and prefers `DATABASE_URL` (Render Postgres `postgres://...` URL, auto-converted to an Npgsql connection string with `SslMode=Require`), falling back to `ConnectionStrings:Default`.
+- Deploy: connect `github.com/kanmantha/FieldSuite` as a Render Blueprint (uses `render.yaml`) or create a web service manually: runtime `Docker`, build path `.`, plan free/paid, env vars `ASPNETCORE_ENVIRONMENT=Production` and `DATABASE_URL` from your Postgres instance. Migrations + demo data seed automatically on first start.
+- Live instance: https://fieldsuite.onrender.com
+
 ## Tests
 
 ```bash
