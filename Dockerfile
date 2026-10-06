@@ -13,7 +13,5 @@ RUN dotnet publish src/FieldSuite.Web/FieldSuite.Web.csproj -c Release -o /app/p
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
-EXPOSE 8080
 COPY --from=build /app/publish .
-ENV ASPNETCORE_URLS=http://0.0.0.0:8080
 ENTRYPOINT ["dotnet", "FieldSuite.Web.dll"]
