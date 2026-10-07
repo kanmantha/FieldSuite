@@ -8,38 +8,41 @@
     var snags = (List<FieldSuite.Domain.Entities.Snag>)ViewBag.UrgentSnags;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-head d-flex justify-content-between align-items-end gap-3">
     <div>
-        <h4 class="mb-0 fw-bold">Operations Dashboard</h4>
-        <span class="text-muted small">Cross-module snapshot for your organization</span>
+        <h2 class="page-title">Operations Dashboard</h2>
+        <span class="page-sub">Cross-module snapshot for your organization</span>
     </div>
-    <a class="btn btn-sm btn-outline-primary" asp-controller="Assistant" asp-action="Index">Ask the AI Assistant</a>
+    <a class="btn btn-outline-primary btn-sm" asp-controller="Assistant" asp-action="Index"><i class="bi bi-robot me-1"></i>Ask the AI Assistant</a>
 </div>
 
 <div class="row g-3 mb-3">
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Active projects</div><div class="kpi-value">@s.ActiveProjects</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OpenIncidents > 0 ? "danger" : "success")"><div class="kpi-label">Open incidents</div><div class="kpi-value">@s.OpenIncidents</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OverdueActions > 0 ? "danger" : "success")"><div class="kpi-label">Overdue actions</div><div class="kpi-value">@s.OverdueActions</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card warning"><div class="kpi-label">Active permits</div><div class="kpi-value">@s.ActivePermits</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OpenSnags > 0 ? "warning" : "success")"><div class="kpi-label">Open snags</div><div class="kpi-value">@s.OpenSnags</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Present today</div><div class="kpi-value">@s.WorkersPresentToday<span class="fs-6 text-muted">/@s.TotalActiveWorkers</span></div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card warning"><div class="kpi-label">Docs expiring 30d</div><div class="kpi-value">@s.ExpiringDocuments</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Pending approvals</div><div class="kpi-value">@s.PendingPermits</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><div class="kpi-label">Open NCRs</div><div class="kpi-value">@s.OpenNCRs</div></div></div>
-    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card success"><div class="kpi-label">Estimates sent</div><div class="kpi-value">@s.SentEstimates</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><span class="kpi-icon info"><i class="bi bi-folder2-open"></i></span><div class="kpi-label">Active projects</div><div class="kpi-value">@s.ActiveProjects</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OpenIncidents > 0 ? "danger" : "success")"><span class="kpi-icon @(s.OpenIncidents > 0 ? "danger" : "success")"><i class="bi bi-shield-exclamation"></i></span><div class="kpi-label">Open incidents</div><div class="kpi-value">@s.OpenIncidents</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OverdueActions > 0 ? "danger" : "success")"><span class="kpi-icon @(s.OverdueActions > 0 ? "danger" : "success")"><i class="bi bi-alarm"></i></span><div class="kpi-label">Overdue actions</div><div class="kpi-value">@s.OverdueActions</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card warning"><span class="kpi-icon warning"><i class="bi bi-file-earmark-check"></i></span><div class="kpi-label">Active permits</div><div class="kpi-value">@s.ActivePermits</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card @(s.OpenSnags > 0 ? "warning" : "success")"><span class="kpi-icon @(s.OpenSnags > 0 ? "warning" : "success")"><i class="bi bi-clipboard-x"></i></span><div class="kpi-label">Open snags</div><div class="kpi-value">@s.OpenSnags</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><span class="kpi-icon info"><i class="bi bi-people"></i></span><div class="kpi-label">Present today</div><div class="kpi-value">@s.WorkersPresentToday<span class="fs-6 text-muted">/@s.TotalActiveWorkers</span></div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card warning"><span class="kpi-icon warning"><i class="bi bi-calendar-x"></i></span><div class="kpi-label">Docs expiring 30d</div><div class="kpi-value">@s.ExpiringDocuments</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><span class="kpi-icon info"><i class="bi bi-hourglass-split"></i></span><div class="kpi-label">Pending approvals</div><div class="kpi-value">@s.PendingPermits</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card info"><span class="kpi-icon info"><i class="bi bi-exclamation-octagon"></i></span><div class="kpi-label">Open NCRs</div><div class="kpi-value">@s.OpenNCRs</div></div></div>
+    <div class="col-6 col-md-3 col-xl-2"><div class="kpi-card success"><span class="kpi-icon success"><i class="bi bi-check2-circle"></i></span><div class="kpi-label">Estimates sent</div><div class="kpi-value">@s.SentEstimates</div></div></div>
 </div>
 
 @if (nudges.Count > 0)
 {
     <div class="card mb-3">
-        <div class="card-header bg-white fw-semibold">Smart Nudges <span class="badge bg-danger">@nudges.Count</span></div>
+        <div class="card-header bg-white d-flex align-items-center gap-2"><i class="bi bi-lightning-charge-fill text-warning"></i>Smart Nudges <span class="badge bg-danger ms-1">@nudges.Count</span></div>
         <ul class="list-group list-group-flush">
             @foreach (var n in nudges.Take(8))
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <span>
-                        <span class="badge bg-@(n.Severity == "danger" ? "danger" : "warning") text-uppercase">@n.Kind</span>
-                        @n.Message
+                    <span class="d-flex align-items-center gap-2">
+                        <span class="nudge-icon @(n.Severity == "danger" ? "danger" : "warning")"><i class="bi bi-exclamation-lg"></i></span>
+                        <span>
+                            <span class="badge bg-@(n.Severity == "danger" ? "danger" : "warning") text-uppercase me-1">@n.Kind</span>
+                            @n.Message
+                        </span>
                     </span>
                     <a class="btn btn-sm btn-outline-secondary" href="@n.Link">Review</a>
                 </li>

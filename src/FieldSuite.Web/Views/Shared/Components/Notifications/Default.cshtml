@@ -1,21 +1,25 @@
 @using FieldSuite.Domain.Entities
 @model IReadOnlyList<FieldSuite.Domain.Entities.Notification>
 <div class="dropdown">
-    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        <span class="badge rounded-pill bg-danger">@(ViewBag.UnreadCount)</span>
-        Alerts
+    <button class="bell-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+        <i class="bi bi-bell"></i>
+        @if ((int)ViewBag.UnreadCount > 0)
+        {
+            <span class="count">@ViewBag.UnreadCount</span>
+        }
     </button>
     <ul class="dropdown-menu dropdown-menu-end notifications-menu">
+        <li><span class="notif-head">Notifications</span></li>
         @if (!Model.Any())
         {
-            <li><span class="dropdown-item-text text-muted">No notifications yet</span></li>
+            <li><span class="dropdown-item-text text-muted small px-2 py-3 d-block text-center">No notifications yet</span></li>
         }
         @foreach (var n in Model)
         {
             <li>
-                <a class="dropdown-item @(n.IsRead ? "" : "fw-semibold")" href="@n.Link">
-                    <div>@n.Message</div>
-                    <small class="text-muted">@n.CreatedAt.ToString("dd MMM HH:mm") UTC</small>
+                <a class="dropdown-item notif-item d-flex flex-column align-items-start @(n.IsRead ? "" : "unread")" href="@n.Link">
+                    <span>@n.Message</span>
+                    <span class="notif-time">@n.CreatedAt.ToString("dd MMM HH:mm") UTC</span>
                 </a>
             </li>
         }

@@ -4,43 +4,54 @@
     Layout = "_Layout";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-5 col-lg-4">
-        <div class="card mt-5">
-            <div class="card-body p-4">
-                <h4 class="mb-1 fw-bold">FieldSuite</h4>
-                <p class="text-muted small mb-4">Workforce &amp; field management for construction SMEs</p>
+<div class="login-wrap">
+    <div class="login-brand">
+        <div>
+            <div class="brand-row mb-5">
+                <span class="brand-mark">FS</span>
+                <span>FieldSuite</span>
+            </div>
+            <div class="brand-big mb-2">Run your site operations better.</div>
+            <div class="brand-tag mb-4">Safety, quality, permits, estimation and workforce — one platform for construction SMEs.</div>
+        </div>
+        <ul class="feat-list list-unstyled mb-0">
+            <li class="feat"><i class="bi bi-shield-check"></i><span>Digitised permits, incidents and corrective actions</span></li>
+            <li class="feat"><i class="bi bi-clipboard-data"></i><span>Snag lists, inspections and NCR workflows</span></li>
+            <li class="feat"><i class="bi bi-calculator"></i><span>Estimates &amp; BOQ with smart cost suggestions</span></li>
+            <li class="feat"><i class="bi bi-robot"></i><span>AI assistant that works offline by default</span></li>
+        </ul>
+    </div>
 
-                <form asp-action="Login" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
-                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
+    <div class="login-form-col">
+        <div class="w-100">
+            <h4 class="mb-1 fw-bold">Welcome back</h4>
+            <p class="text-muted small mb-4">Sign in to your workspace</p>
 
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input name="email" class="form-control" autocomplete="username" autofocus />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input name="password" type="password" class="form-control" autocomplete="current-password" />
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Sign in</button>
-                </form>
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-2"></div>
 
-                <hr />
-                <div class="small text-muted">
-                    <div class="fw-semibold mb-1">Demo accounts</div>
-                    <table class="table table-sm table-striped small mb-2" id="demo-accounts">
-                        <tbody>
-                            <tr data-email="admin@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Admin</a></td></tr>
-                            <tr data-email="site@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Site Manager</a></td></tr>
-                            <tr data-email="safety@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Safety Officer</a></td></tr>
-                            <tr data-email="qc@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">QC Inspector</a></td></tr>
-                            <tr data-email="est@@demo.fieldsuite"><td><a href="#" class="text-decoration-none">Estimator</a></td></tr>
-                        </tbody>
-                    </table>
-                    <div class="mt-1">Password for all: <code>Demo123!</code></div>
-                    <div class="text-muted">Click an account to fill the form.</div>
+                <div class="mb-3">
+                    <label class="form-label">Email</label>
+                    <input name="email" class="form-control form-control-lg" autocomplete="username" autofocus placeholder="you@company.com" />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input name="password" type="password" class="form-control form-control-lg" autocomplete="current-password" placeholder="••••••••" />
+                </div>
+                <button type="submit" class="btn btn-primary w-100 btn-lg">Sign in</button>
+            </form>
+
+            <hr class="my-4" />
+            <div class="small">
+                <div class="fw-semibold text-muted mb-2">Quick demo access — click a role (password <code>Demo123!</code>)</div>
+                <div class="d-grid gap-2" id="demo-accounts">
+                    <div class="demo-account d-flex" data-email="admin@demo.fieldsuite"><span class="role-name">Admin</span><span class="role-email">admin@demo.fieldsuite</span></div>
+                    <div class="demo-account d-flex" data-email="site@demo.fieldsuite"><span class="role-name">Site Manager</span><span class="role-email">site@demo.fieldsuite</span></div>
+                    <div class="demo-account d-flex" data-email="safety@demo.fieldsuite"><span class="role-name">Safety Officer</span><span class="role-email">safety@demo.fieldsuite</span></div>
+                    <div class="demo-account d-flex" data-email="qc@demo.fieldsuite"><span class="role-name">QC Inspector</span><span class="role-email">qc@demo.fieldsuite</span></div>
+                    <div class="demo-account d-flex" data-email="est@demo.fieldsuite"><span class="role-name">Estimator</span><span class="role-email">est@demo.fieldsuite</span></div>
                 </div>
             </div>
         </div>
@@ -49,11 +60,9 @@
 
 <script>
     document.getElementById('demo-accounts').addEventListener('click', function (e) {
-        var link = e.target.closest('a');
-        if (!link) return;
-        e.preventDefault();
-        var row = link.closest('tr');
-        document.querySelector('[name="email"]').value = row.getAttribute('data-email');
+        var el = e.target.closest('.demo-account');
+        if (!el) return;
+        document.querySelector('[name="email"]').value = el.getAttribute('data-email');
         document.querySelector('[name="password"]').value = 'Demo123!';
         document.querySelector('[name="email"]').focus();
     });
