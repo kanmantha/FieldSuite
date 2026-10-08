@@ -1,0 +1,104 @@
+@page { size: A4; margin: 12mm 15mm 16mm 15mm; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+    font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+    color: #17202e;
+    font-size: 10.5pt;
+    line-height: 1.55;
+    background: #fff;
+}
+
+.doc { max-width: 800px; margin: 0 auto; }
+
+/* Brand header band */
+.doc-header {
+    background: linear-gradient(135deg, #0b1a2e 0%, #16273f 70%, #1e4fd6 130%);
+    color: #fff;
+    border-radius: 10px;
+    padding: 16px 22px 14px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    page-break-inside: avoid;
+}
+.brand-mark {
+    background: #f2a41f;
+    color: #0b1a2e;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 6px 9px;
+    font-size: 12pt;
+    letter-spacing: 0.5px;
+    flex: 0 0 auto;
+}
+.doc-header h1 { margin: 0; font-size: 15pt; line-height: 1.2; }
+.doc-header .doc-sub { opacity: 0.9; font-size: 9.5pt; margin-top: 2px; }
+
+/* Section headings */
+h2 {
+    font-size: 11.5pt;
+    color: #0b1a2e;
+    margin: 16px 0 6px;
+    padding-bottom: 3px;
+    border-bottom: 2px solid #f2a41f;
+    page-break-after: avoid;
+}
+h3 { font-size: 10.5pt; color: #1e4fd6; margin: 12px 0 4px; page-break-after: avoid; }
+
+p { margin: 6px 0; }
+
+/* Feature bullets with accent dots */
+ul.feat { list-style: none; padding-left: 4px; margin: 6px 0; }
+ul.feat li { position: relative; padding-left: 16px; margin: 3px 0; }
+ul.feat li::before {
+    content: ""; position: absolute; left: 0; top: 6px;
+    width: 7px; height: 7px; border-radius: 2px;
+    background: #1e4fd6;
+}
+ul.feat li::marker { content: ""; }
+
+/* Numbered steps */
+ol.steps { padding-left: 20px; margin: 6px 0; }
+ol.steps li { margin: 4px 0; }
+ol.steps b { color: #0b1a2e; }
+
+/* Two-column feature grid */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 18px; }
+
+/* Tables */
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 9.5pt; }
+th, td { border: 1px solid #dbe2ec; padding: 5px 8px; text-align: left; vertical-align: top; }
+th { background: #0b1a2e; color: #fff; font-weight: 600; }
+tr:nth-child(even) td { background: #f5f8fc; }
+
+/* Callout box */
+.note {
+    background: #fbf3e2; border-left: 4px solid #f2a41f;
+    border-radius: 6px; padding: 8px 12px; margin: 8px 0;
+    font-size: 9.5pt;
+}
+.note b { color: #7a5200; }
+
+/* Role pills */
+.pills { margin: 6px 0; }
+.pill {
+    display: inline-block; background: #eef2fd; color: #1e4fd6;
+    border: 1px solid #1e4fd6; border-radius: 12px;
+    padding: 1px 10px; font-size: 8.5pt; font-weight: 600;
+    margin: 0 4px 4px 0;
+}
+.pill.gray { background: #f1f4f8; color: #5b6b84; border-color: #c7d0dd; }
+
+table.roles th { background: #1e4fd6; }
+
+/* Footer */
+.doc-footer {
+    margin-top: 18px; padding-top: 8px;
+    border-top: 1px solid #dbe2ec;
+    display: flex; justify-content: space-between;
+    color: #8494a7; font-size: 8pt;
+    page-break-inside: avoid;
+}

@@ -453,6 +453,19 @@ h1, h2, h3, h4, h5, h6 { font-weight: 650; letter-spacing: -.01em; }
 .kpi-icon.info { background: var(--primary-soft); color: var(--primary); }
 .kpi-icon.success { background: #e2f5ec; color: var(--success); }
 
+.doc-icon {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: var(--brand-soft);
+    color: var(--warning);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
 /* ---------- Tables ---------- */
 
 .table { margin-bottom: 0; }

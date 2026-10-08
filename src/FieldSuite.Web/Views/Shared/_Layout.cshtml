@@ -57,6 +57,9 @@
 
                 <div class="nav-section">Intelligence</div>
                 <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Assistant") ? "active" : "")" asp-controller="Assistant" asp-action="Index"><i class="bi bi-robot"></i>AI Assistant</a>
+
+                <div class="nav-section">Help</div>
+                <a class="nav-link @(Context.Request.Path.StartsWithSegments("/Documents") ? "active" : "")" asp-controller="Documents" asp-action="Index"><i class="bi bi-file-earmark-pdf"></i>User Documents</a>
             </nav>
             <div class="sidebar-foot">
                 <span class="dot"></span>
