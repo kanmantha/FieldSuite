@@ -29,9 +29,13 @@
                             <div class="small text-muted">Updated @d.ModifiedUtc.ToString("dd MMM yyyy") UTC</div>
                         </div>
                     </div>
-                    <div class="mt-auto pt-3 d-flex gap-2">
+                    <div class="mt-auto pt-3 d-flex flex-wrap gap-2">
                         <a class="btn btn-sm btn-primary" href="@Url.Content($"~/docs/{d.FileName}")" download="@d.FileName"><i class="bi bi-download me-1"></i>Download</a>
                         <a class="btn btn-sm btn-outline-secondary" href="@Url.Content($"~/docs/{d.FileName}")" target="_blank"><i class="bi bi-box-arrow-up-right me-1"></i>Open</a>
+                        @if (!string.IsNullOrEmpty(d.VideoUrl))
+                        {
+                            <a class="btn btn-sm btn-outline-danger" href="@d.VideoUrl" target="_blank"><i class="bi bi-play-btn me-1"></i>AI Video (YouTube)</a>
+                        }
                     </div>
                 </div>
             </div>
