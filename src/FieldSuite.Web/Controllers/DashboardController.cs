@@ -20,6 +20,9 @@ public class DashboardController : AppController
         _nudge = nudge;
     }
 
+    /// <summary>
+    /// Displays dashboard with KPIs, nudges and cross-module snapshot.
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var stats = await _dashboard.GetAsync(OrgId);

@@ -18,6 +18,9 @@ public class WorkforceController : AppController
 
     // ==================== TODAY'S ATTENDANCE BOARD ====================
 
+    /// <summary>
+    /// Lists records.
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var today = DateTime.UtcNow.Date;

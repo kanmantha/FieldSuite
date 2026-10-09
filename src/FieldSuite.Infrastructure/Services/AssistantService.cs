@@ -22,6 +22,9 @@ public class AssistantService : IAssistantService
         _llm = llm;
     }
 
+    /// <summary>
+    /// Answers question using rules engine or configured LLM if available.
+    /// </summary>
     public async Task<AssistantReply> AskAsync(int organizationId, string question)
     {
         var q = (question ?? string.Empty).Trim();

@@ -19,6 +19,9 @@ public class AssistantController : AppController
         _drafts = drafts;
     }
 
+    /// <summary>
+    /// Renders AI Assistant page.
+    /// </summary>
     public IActionResult Index() => View();
 
     [HttpPost]

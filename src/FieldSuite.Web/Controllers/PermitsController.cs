@@ -176,6 +176,9 @@ public class PermitsController : AppController
         return RedirectToAction(nameof(Details), new { id = permit.Id });
     }
 
+    /// <summary>
+    /// Shows permit details with approvals/checklist.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var permit = await LoadPermitAsync(id);

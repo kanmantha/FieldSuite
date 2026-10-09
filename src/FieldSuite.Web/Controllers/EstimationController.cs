@@ -53,6 +53,9 @@ public class EstimationController : AppController
     }
 
     [HttpGet]
+    /// <summary>
+    /// Shows create estimate form.
+    /// </summary>
     public async Task<IActionResult> Create()
     {
         ViewBag.Projects = await Db.Projects
@@ -113,6 +116,9 @@ public class EstimationController : AppController
     }
 
     [HttpGet]
+    /// <summary>
+    /// Shows estimate details with categories and items.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var estimate = await Db.Estimates

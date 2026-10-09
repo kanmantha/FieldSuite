@@ -10,6 +10,9 @@ public class AuditService : IAuditService
     private readonly AppDbContext _db;
     public AuditService(AppDbContext db) => _db = db;
 
+    /// <summary>
+    /// Saves audit log entry.
+    /// </summary>
     public async Task SaveAsync(int organizationId, string userId, string userName, string action, string entityType, string entityId, string detail)
     {
         _db.AuditLogs.Add(new AuditLog
@@ -38,6 +41,9 @@ public class NotificationService : INotificationService
         _userManager = userManager;
     }
 
+    /// <summary>
+    /// Creates notification for specific user.
+    /// </summary>
     public async Task NotifyAsync(int organizationId, string userId, string message, string link)
     {
         _db.Notifications.Add(new Notification
@@ -50,6 +56,9 @@ public class NotificationService : INotificationService
         await _db.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Creates notifications for all users in role.
+    /// </summary>
     public async Task NotifyRoleAsync(int organizationId, string role, string message, string link)
     {
         var users = await _userManager.Users

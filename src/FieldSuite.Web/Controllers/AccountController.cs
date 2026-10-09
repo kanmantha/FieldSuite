@@ -66,5 +66,12 @@ public class AccountController : Controller
 
     [HttpGet]
     [AllowAnonymous]
+    /// <summary>
+
+    /// Displays access denied page.
+
+    /// </summary>
+
+
     public IActionResult AccessDenied() => View();
 }

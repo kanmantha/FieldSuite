@@ -13,6 +13,9 @@ public class ProjectsController : AppController
     public ProjectsController(AppDbContext db, ICurrentUser current, Infrastructure.Services.IAuditService audit)
         : base(db, current, audit) { }
 
+    /// <summary>
+    /// Lists projects.
+    /// </summary>
     public async Task<IActionResult> Index()
     {
         var projects = await Db.Projects
@@ -58,6 +61,9 @@ public class ProjectsController : AppController
         return RedirectToAction(nameof(Details), new { id = model.Id });
     }
 
+    /// <summary>
+    /// Shows project details.
+    /// </summary>
     public async Task<IActionResult> Details(int id)
     {
         var project = await Db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.OrganizationId == OrgId);
